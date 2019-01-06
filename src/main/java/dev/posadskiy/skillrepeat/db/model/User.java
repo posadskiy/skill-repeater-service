@@ -12,9 +12,9 @@ public class User implements Serializable {
     @Id
     private String id;
     private String name;
-    private List<String> skills;
+    private List<Skill> skills;
 
-    public User(String id, String name, List<String> skills) {
+    public User(String id, String name, List<Skill> skills) {
         this.id = id;
         this.name = name;
         this.skills = skills;
@@ -36,11 +36,11 @@ public class User implements Serializable {
         this.name = name;
     }
 
-    public List<String> getSkills() {
+    public List<Skill> getSkills() {
         return skills;
     }
 
-    public void setSkills(List<String> skills) {
+    public void setSkills(List<Skill> skills) {
         this.skills = skills;
     }
 }
