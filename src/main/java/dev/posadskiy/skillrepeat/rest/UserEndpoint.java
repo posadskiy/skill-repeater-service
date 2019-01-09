@@ -5,6 +5,8 @@ import dev.posadskiy.skillrepeat.db.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.security.auth.message.AuthException;
+import java.lang.module.FindException;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,5 +46,19 @@ public class UserEndpoint {
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
     public void deleteUser(@PathVariable(value = "id") final String id) {
         repository.deleteById(id);
+    }
+
+    @RequestMapping(value = "/auth", method = RequestMethod.POST)
+    public User auth(@RequestBody final User user) throws AuthException {
+        User foundUser = repository.findByName(user.getName());
+        if (foundUser == null) {
+            throw new FindException("User not found");
+        }
+
+        if (user.getPassword().equals(foundUser.getPassword())) {
+            return foundUser;
+        }
+
+        throw new AuthException("Auth is not correct");
     }
 }

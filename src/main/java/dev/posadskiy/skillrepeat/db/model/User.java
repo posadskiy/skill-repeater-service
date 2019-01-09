@@ -12,6 +12,7 @@ public class User implements Serializable {
     @Id
     private String id;
     private String name;
+    private String password;
     private List<Skill> skills;
 
     public User(String id, String name, List<Skill> skills) {
@@ -34,6 +35,14 @@ public class User implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public List<Skill> getSkills() {
