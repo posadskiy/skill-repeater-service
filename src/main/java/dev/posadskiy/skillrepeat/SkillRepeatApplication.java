@@ -7,7 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SkillRepeatApplication implements CommandLineRunner {
+public class SkillRepeatApplication {
 
 	@Autowired
 	UserRepository userRepository;
@@ -16,10 +16,10 @@ public class SkillRepeatApplication implements CommandLineRunner {
 		SpringApplication.run(SkillRepeatApplication.class, args);
 	}
 
-	@Override
+	/*@Override
 	public void run(String... args) throws Exception {
 		userRepository.deleteAll();
-	}
+	}*/
 
 }
 
