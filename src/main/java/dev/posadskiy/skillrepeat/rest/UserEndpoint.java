@@ -1,17 +1,23 @@
 package dev.posadskiy.skillrepeat.rest;
 
 import dev.posadskiy.skillrepeat.db.UserRepository;
-import dev.posadskiy.skillrepeat.db.model.Skill;
-import dev.posadskiy.skillrepeat.db.model.User;
+import dev.posadskiy.skillrepeat.db.model.DbSkill;
+import dev.posadskiy.skillrepeat.db.model.DbUser;
+import dev.posadskiy.skillrepeat.dto.Auth;
+import dev.posadskiy.skillrepeat.dto.Skill;
+import dev.posadskiy.skillrepeat.dto.User;
+import dev.posadskiy.skillrepeat.mapper.AuthMapper;
+import dev.posadskiy.skillrepeat.mapper.UserMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.message.AuthException;
-import java.util.Calendar;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/user")
@@ -19,70 +25,65 @@ import java.util.Optional;
 public class UserEndpoint {
 
     @Autowired
-    UserRepository repository;
+    private UserRepository repository;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private AuthMapper authMapper;
 
     @RequestMapping("/all")
-    public List<User> getAll() {
+    public List<DbUser> getAll() {
         return repository.findAll();
     }
 
     @RequestMapping("/id/{id}")
     public User getUserById(@PathVariable(value = "id") final String id) {
-        Optional<User> optionalUser = repository.findById(id);
+        Optional<DbUser> optionalUser = repository.findById(id);
 
-        User user = null;
-        if (optionalUser.isPresent()) {
-            user = optionalUser.get();
-        }
+        if (!optionalUser.isPresent()) return null;
 
-        if (user != null && CollectionUtils.isNotEmpty(user.getSkills())) {
-            for (Skill skill : user.getSkills()) {
-                if (skill.getLastRepeat() != null) {
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.add(Calendar.DATE, -14);
-                    skill.setIsNeedRepeat(skill.getLastRepeat().before(calendar.getTime()));
-                }
-            }
-        }
+        DbUser user = optionalUser.get();
 
-        return user;
+        return userMapper.mapToDto(user);
     }
 
     @RequestMapping("/name/{name}")
-    public User getUserByName(@PathVariable(value = "name") final String name) {
+    public DbUser getUserByName(@PathVariable(value = "name") final String name) {
         return repository.findByName(name);
     }
 
     @RequestMapping(value = "/", method = RequestMethod.PUT)
     public User addUser(@RequestBody final User user) {
-        return repository.save(user);
+        return userMapper.mapToDto(
+            repository.save(
+                userMapper.mapFromDto(user)));
     }
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public User updateUser(@RequestBody final User user) {
-        for (Skill skill : user.getSkills()) {
-            if (skill.getLevel() == null) {
-                skill.setLevel(1);
-            }
-            if (skill.getTermRepeat() != null) {
-                Calendar calendar = Calendar.getInstance();
-                switch (skill.getTermRepeat()) {
-                    case "0": break;
-                    case "1": calendar.add(Calendar.DATE, -1); break;
-                    case "2": calendar.add(Calendar.DATE, -7); break;
-                    case "3": calendar.add(Calendar.DATE, -14); break;
-                    case "4": calendar.add(Calendar.DATE, -30); break;
-                    default: break;
-                }
+        return userMapper.mapToDto(
+            repository.save(
+                userMapper.mapFromDto(user)));
+    }
 
-                skill.setLastRepeat(calendar.getTime());
-            } else {
-                Calendar calendar = Calendar.getInstance();
-                calendar.add(Calendar.YEAR, -1);
-                skill.setLastRepeat(calendar.getTime());
-            }
+    @RequestMapping(value = "/{userId}/skill/add", method = RequestMethod.POST)
+    public User addSkill(@PathVariable(value = "userId") final String userId,
+                         @RequestBody final List<Skill> skills) {
+        Optional<DbUser> optionalDbUser = repository.findById(userId);
+        if (!optionalDbUser.isPresent()) return null;
+
+        DbUser dbUser = optionalDbUser.get();
+        List<DbSkill> dbSkills = skills.stream()
+            .map(skill -> userMapper.map(skill)).collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(dbUser.getSkills())) {
+            dbUser.setSkills(new ArrayList<>());
         }
-        return repository.save(user);
+        dbUser.getSkills().addAll(dbSkills);
+
+        return userMapper.mapToDto(repository.save(dbUser));
     }
 
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
@@ -93,31 +94,38 @@ public class UserEndpoint {
     @RequestMapping(value = "/{userId}/skill/repeat/{skillId}", method = RequestMethod.POST)
     public User repeatSkill(@PathVariable(value = "userId") final String userId,
                             @PathVariable(value = "skillId") final Integer skillId) {
-        Optional<User> optionalUser = repository.findById(userId);
+        Optional<DbUser> optionalUser = repository.findById(userId);
 
         if (!optionalUser.isPresent()) return null;
 
-        User user = optionalUser.get();
-        Skill skill = user.getSkills().get(skillId);
+        DbUser user = optionalUser.get();
+        DbSkill skill = user.getSkills().get(skillId);
 
         skill.setLastRepeat(new Date());
         skill.setLevel(skill.getLevel() + 1);
 
-        repository.save(user);
-        return user;
+        DbUser savedDbUser = repository.save(user);
+        return userMapper.mapToDto(savedDbUser);
     }
 
     @RequestMapping(value = "/auth", method = RequestMethod.POST)
-    public User auth(@RequestBody final User user) throws AuthException {
-        User foundUser = repository.findByName(user.getName());
+    public User auth(@RequestBody final Auth auth) throws AuthException {
+        DbUser foundUser = repository.findByName(auth.getLogin());
         if (foundUser == null) {
             throw new AuthException("User not found");
         }
 
-        if (user.getPassword().equals(foundUser.getPassword())) {
-            return foundUser;
+        if (auth.getPassword().equals(foundUser.getPassword())) {
+            return userMapper.mapToDto(foundUser);
         }
 
         throw new AuthException("Auth is not correct");
+    }
+
+    @RequestMapping(value = "/reg", method = RequestMethod.POST)
+    public User registration(@RequestBody final Auth auth) {
+        return userMapper.mapToDto(
+            repository.save(
+                authMapper.mapFromDto(auth)));
     }
 }
