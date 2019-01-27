@@ -8,12 +8,10 @@ import java.util.Date;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Skill {
+public class DbSkill {
     @Id
     private String id;
     private String name;
-    private Boolean isNeedRepeat;
     private Date lastRepeat;
     private Integer level;
-    private String termRepeat;
 }
