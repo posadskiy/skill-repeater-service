@@ -8,6 +8,7 @@ import org.mapstruct.*;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 @Mapper
 public interface UserMapper {
@@ -48,6 +49,7 @@ public interface UserMapper {
 
     @AfterMapping
     default void map(Skill skill, @MappingTarget DbSkill dbSkill) {
+        dbSkill.setId(mapSkillId(skill.getId()));
         dbSkill.setLevel(mapLevel(skill.getLevel()));
         dbSkill.setLastRepeat(mapTermRepeatStringToLastRepeatDate(skill.getTermRepeat()));
     }
@@ -90,5 +92,11 @@ public interface UserMapper {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -days);
         return calendar.getTime();
+    }
+
+    default String mapSkillId(String id) {
+        if (id != null) return id;
+
+        return UUID.randomUUID().toString();
     }
 }

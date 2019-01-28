@@ -1,13 +1,13 @@
 package dev.posadskiy.skillrepeat.db.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
 @Data
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@Document
 public class DbSkill {
     @Id
     private String id;

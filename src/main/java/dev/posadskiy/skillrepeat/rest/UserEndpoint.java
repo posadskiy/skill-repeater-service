@@ -93,13 +93,13 @@ public class UserEndpoint {
 
     @RequestMapping(value = "/{userId}/skill/repeat/{skillId}", method = RequestMethod.POST)
     public User repeatSkill(@PathVariable(value = "userId") final String userId,
-                            @PathVariable(value = "skillId") final Integer skillId) {
+                            @PathVariable(value = "skillId") final String skillId) {
         Optional<DbUser> optionalUser = repository.findById(userId);
 
         if (!optionalUser.isPresent()) return null;
 
         DbUser user = optionalUser.get();
-        DbSkill skill = user.getSkills().get(skillId);
+        DbSkill skill = CollectionUtils.find(user.getSkills(), item -> item.getId().equals(skillId));
 
         skill.setLastRepeat(new Date());
         skill.setLevel(skill.getLevel() + 1);
