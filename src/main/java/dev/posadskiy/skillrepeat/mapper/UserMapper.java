@@ -35,6 +35,7 @@ public interface UserMapper {
     @Mappings({
         @Mapping(source = "id", target = "id"),
         @Mapping(source = "name", target = "name"),
+        @Mapping(source = "email", target = "email"),
         @Mapping(source = "skills", target = "skills")
     })
     DbUser mapFromDto(User user);
