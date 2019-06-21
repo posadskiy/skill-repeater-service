@@ -1,131 +1,115 @@
 package dev.posadskiy.skillrepeat.rest;
 
+import dev.posadskiy.skillrepeat.controller.UserController;
+import dev.posadskiy.skillrepeat.db.SessionRepository;
 import dev.posadskiy.skillrepeat.db.UserRepository;
-import dev.posadskiy.skillrepeat.db.model.DbSkill;
+import dev.posadskiy.skillrepeat.db.model.DbSession;
 import dev.posadskiy.skillrepeat.db.model.DbUser;
 import dev.posadskiy.skillrepeat.dto.Auth;
 import dev.posadskiy.skillrepeat.dto.Skill;
 import dev.posadskiy.skillrepeat.dto.User;
 import dev.posadskiy.skillrepeat.mapper.AuthMapper;
 import dev.posadskiy.skillrepeat.mapper.UserMapper;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.message.AuthException;
-import java.util.ArrayList;
-import java.util.Date;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/user")
 @CrossOrigin(origins = "http://192.168.100.7:3000")
 public class UserEndpoint {
+	private static final String SESSION_COOKIE_NAME = "SESSION_ID";
 
-    @Autowired
-    private UserRepository repository;
+	private final UserRepository userRepository;
+	private final SessionRepository sessionRepository;
+	private final UserMapper userMapper;
+	private final AuthMapper authMapper;
+	private final UserController controller;
 
-    @Autowired
-    private UserMapper userMapper;
+	@Autowired
+	public UserEndpoint(UserRepository userRepository, SessionRepository sessionRepository, UserMapper userMapper, AuthMapper authMapper, UserController controller) {
+		this.userRepository = userRepository;
+		this.sessionRepository = sessionRepository;
+		this.userMapper = userMapper;
+		this.authMapper = authMapper;
+		this.controller = controller;
+	}
 
-    @Autowired
-    private AuthMapper authMapper;
+	@RequestMapping("/all")
+	public List<User> getAll(@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		return controller.getAll(sessionId);
+	}
 
-    @RequestMapping("/all")
-    public List<DbUser> getAll() {
-        return repository.findAll();
-    }
+	@GetMapping("/id/{id}")
+	public User getUserById(@PathVariable("id") final String id, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		return controller.getUserById(id, sessionId);
+	}
 
-    @RequestMapping("/id/{id}")
-    public User getUserById(@PathVariable(value = "id") final String id) {
-        Optional<DbUser> optionalUser = repository.findById(id);
+	@GetMapping("/name/{name}")
+	public User getUserByName(@PathVariable("name") final String name, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		return controller.findByName(name, sessionId);
+	}
 
-        if (!optionalUser.isPresent()) return null;
+	@PutMapping("/")
+	public User addUser(@RequestBody final User user, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		return controller.addUser(user, sessionId);
+	}
 
-        DbUser user = optionalUser.get();
+	@PostMapping("/")
+	public User updateUser(@RequestBody final User user, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		return controller.updateUser(user, sessionId);
+	}
 
-        return userMapper.mapToDto(user);
-    }
+	@PostMapping("/{userId}/skill/add")
+	public User addSkill(@PathVariable("userId") final String userId, @RequestBody final List<Skill> skills,
+						 @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		return controller.addSkill(userId, skills, sessionId);
+	}
 
-    @RequestMapping("/name/{name}")
-    public DbUser getUserByName(@PathVariable(value = "name") final String name) {
-        return repository.findByName(name);
-    }
+	@DeleteMapping("/delete/{id}")
+	public void deleteUser(@PathVariable(value = "id") final String id, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		controller.deleteUser(id, sessionId);
+	}
 
-    @RequestMapping(value = "/", method = RequestMethod.PUT)
-    public User addUser(@RequestBody final User user) {
-        return userMapper.mapToDto(
-            repository.save(
-                userMapper.mapFromDto(user)));
-    }
+	@PostMapping("/{userId}/skill/repeat/{skillId}")
+	public User repeatSkill(@PathVariable(value = "userId") final String userId,
+							@PathVariable(value = "skillId") final String skillId,
+							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		return controller.repeatSkill(userId, skillId, sessionId);
+	}
 
-    @RequestMapping(value = "/", method = RequestMethod.POST)
-    public User updateUser(@RequestBody final User user) {
-        return userMapper.mapToDto(
-            repository.save(
-                userMapper.mapFromDto(user)));
-    }
+	@PostMapping("/auth")
+	public User auth(@RequestBody final Auth auth, final HttpServletResponse response) throws AuthException {
+		DbUser foundUser = userRepository.findByName(auth.getLogin());
+		if (foundUser == null) {
+			throw new AuthException("User not found");
+		}
 
-    @RequestMapping(value = "/{userId}/skill/add", method = RequestMethod.POST)
-    public User addSkill(@PathVariable(value = "userId") final String userId,
-                         @RequestBody final List<Skill> skills) {
-        Optional<DbUser> optionalDbUser = repository.findById(userId);
-        if (!optionalDbUser.isPresent()) return null;
+		if (auth.getPassword().equals(foundUser.getPassword())) {
+			User user = userMapper.mapToDto(foundUser);
+			DbSession session = sessionRepository.save(new DbSession(System.currentTimeMillis() + 100_000));
+			Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
+			cookie.setPath("/");
+			response.addCookie(cookie);
+			return user;
+		}
 
-        DbUser dbUser = optionalDbUser.get();
-        List<DbSkill> dbSkills = skills.stream()
-            .map(skill -> userMapper.map(skill)).collect(Collectors.toList());
+		throw new AuthException("Auth is not correct");
+	}
 
-        if (CollectionUtils.isEmpty(dbUser.getSkills())) {
-            dbUser.setSkills(new ArrayList<>());
-        }
-        dbUser.getSkills().addAll(dbSkills);
-
-        return userMapper.mapToDto(repository.save(dbUser));
-    }
-
-    @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
-    public void deleteUser(@PathVariable(value = "id") final String id) {
-        repository.deleteById(id);
-    }
-
-    @RequestMapping(value = "/{userId}/skill/repeat/{skillId}", method = RequestMethod.POST)
-    public User repeatSkill(@PathVariable(value = "userId") final String userId,
-                            @PathVariable(value = "skillId") final String skillId) {
-        Optional<DbUser> optionalUser = repository.findById(userId);
-
-        if (!optionalUser.isPresent()) return null;
-
-        DbUser user = optionalUser.get();
-        DbSkill skill = CollectionUtils.find(user.getSkills(), item -> item.getId().equals(skillId));
-
-        skill.setLastRepeat(new Date());
-        skill.setLevel(skill.getLevel() + 1);
-
-        DbUser savedDbUser = repository.save(user);
-        return userMapper.mapToDto(savedDbUser);
-    }
-
-    @RequestMapping(value = "/auth", method = RequestMethod.POST)
-    public User auth(@RequestBody final Auth auth) throws AuthException {
-        DbUser foundUser = repository.findByName(auth.getLogin());
-        if (foundUser == null) {
-            throw new AuthException("User not found");
-        }
-
-        if (auth.getPassword().equals(foundUser.getPassword())) {
-            return userMapper.mapToDto(foundUser);
-        }
-
-        throw new AuthException("Auth is not correct");
-    }
-
-    @RequestMapping(value = "/reg", method = RequestMethod.POST)
-    public User registration(@RequestBody final Auth auth) {
-        return userMapper.mapToDto(
-            repository.save(
-                authMapper.mapFromDto(auth)));
-    }
+	@PostMapping("/reg")
+	public User registration(@RequestBody final Auth auth, final HttpServletResponse response) {
+		User user = userMapper.mapToDto(
+			userRepository.save(
+				authMapper.mapFromDto(auth)));
+		DbSession session = sessionRepository.save(new DbSession(System.currentTimeMillis() + 100_000));
+		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
+		cookie.setPath("/");
+		response.addCookie(cookie);
+		return user;
+	}
 }

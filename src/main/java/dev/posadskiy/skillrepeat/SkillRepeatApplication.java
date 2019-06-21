@@ -23,7 +23,7 @@ public class SkillRepeatApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) {
 		//userRepository.deleteAll();
-		userService.startUserNotificationService();
+		//userService.startUserNotificationService();
 	}
 
 }
