@@ -2,6 +2,8 @@ package dev.posadskiy.skillrepeat.annotation.bpp;
 
 import dev.posadskiy.skillrepeat.annotation.Security;
 import dev.posadskiy.skillrepeat.controller.SessionController;
+import dev.posadskiy.skillrepeat.exception.SessionDoesNotExistException;
+import dev.posadskiy.skillrepeat.exception.SessionExpiredException;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -12,8 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SecurityAnnotationBeanPostProcessor implements BeanPostProcessor {
-	private static final String SESSION_EXPIRED = "Session was expired";
-	private static final String NOT_AUTHORIZED = "You are not authorized";
 
 	@Autowired
 	private SessionController sessionController;
@@ -41,10 +41,10 @@ public class SecurityAnnotationBeanPostProcessor implements BeanPostProcessor {
 				if (bean.getClass().getDeclaredMethod(method.getName(), method.getParameterTypes()).isAnnotationPresent(Security.class)) {
 					String sessionId = (String) args[args.length - 1];
 					if (!sessionController.isSessionExist(sessionId)) {
-						throw new RuntimeException(NOT_AUTHORIZED);
+						throw new SessionDoesNotExistException();
 					}
 					if (sessionController.isSessionExpired(sessionId)) {
-						throw new RuntimeException(SESSION_EXPIRED);
+						throw new SessionExpiredException();
 					}
 
 					return method.invoke(bean, args);
