@@ -11,7 +11,7 @@ public class SessionControllerImpl implements SessionController {
 	@Autowired
 	SessionRepository repository;
 
-	private DbSession getSessionById(String sessionId) {
+	public DbSession getSessionById(String sessionId) {
 		Optional<DbSession> byId = repository.findById(sessionId);
 		return byId.orElse(null);
 	}

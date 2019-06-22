@@ -50,7 +50,7 @@ public interface UserMapper {
 
     @AfterMapping
     default void map(Skill skill, @MappingTarget DbSkill dbSkill) {
-        dbSkill.setId(mapSkillId(skill.getId()));
+        dbSkill.setId(skill.getId() != null ? skill.getId() : UUID.randomUUID().toString());
         dbSkill.setLevel(mapLevel(skill.getLevel()));
         dbSkill.setLastRepeat(mapTermRepeatStringToLastRepeatDate(skill.getTermRepeat()));
     }
@@ -95,9 +95,4 @@ public interface UserMapper {
         return calendar.getTime();
     }
 
-    default String mapSkillId(String id) {
-        if (id != null) return id;
-
-        return UUID.randomUUID().toString();
-    }
 }

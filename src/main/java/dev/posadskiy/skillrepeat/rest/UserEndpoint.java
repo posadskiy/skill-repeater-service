@@ -91,7 +91,7 @@ public class UserEndpoint {
 
 		if (auth.getPassword().equals(foundUser.getPassword())) {
 			User user = userMapper.mapToDto(foundUser);
-			DbSession session = sessionRepository.save(new DbSession(System.currentTimeMillis() + 100_000));
+			DbSession session = sessionRepository.save(new DbSession(user.getId(), System.currentTimeMillis() + 100_000));
 			Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
 			cookie.setPath("/");
 			response.addCookie(cookie);
@@ -106,10 +106,16 @@ public class UserEndpoint {
 		User user = userMapper.mapToDto(
 			userRepository.save(
 				authMapper.mapFromDto(auth)));
-		DbSession session = sessionRepository.save(new DbSession(System.currentTimeMillis() + 100_000));
+		DbSession session = sessionRepository.save(new DbSession(user.getId(), System.currentTimeMillis() + 100_000));
 		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
 		cookie.setPath("/");
 		response.addCookie(cookie);
 		return user;
+	}
+
+	@PostMapping("/{userId}/changeRoles")
+	public void changeRoles(@PathVariable("userId") final String userId, @RequestBody final List<String> roles,
+							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		controller.changeRoles(userId, roles, sessionId);
 	}
 }

@@ -11,10 +11,12 @@ import java.util.List;
 @Document
 public class DbUser implements Serializable {
 
-    @Id
-    private String id;
-    private String name;
-    private String email;
-    private String password;
-    private List<DbSkill> skills;
+	@Id
+	private String id;
+	private String name;
+	private String email;
+	private String password;
+	private List<DbSkill> skills;
+	private List<String> roles;
+
 }

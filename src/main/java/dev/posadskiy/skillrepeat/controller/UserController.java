@@ -21,4 +21,7 @@ public interface UserController {
 	void deleteUser(String id, String sessionId);
 
 	User repeatSkill(String userId, String skillId, String sessionId);
+
+	void changeRoles(String userId, List<String> roles, String sessionId);
+
 }

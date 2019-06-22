@@ -1,8 +1,7 @@
 package dev.posadskiy.skillrepeat;
 
 import dev.posadskiy.skillrepeat.dto.RestException;
-import dev.posadskiy.skillrepeat.exception.SessionDoesNotExistException;
-import dev.posadskiy.skillrepeat.exception.SessionExpiredException;
+import dev.posadskiy.skillrepeat.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -23,8 +22,26 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(restException, HttpStatus.BAD_REQUEST);
 	}
 
+	@ExceptionHandler(UserDoesNotExistException.class)
+	public ResponseEntity<?> userDoesNotExistExceptionHandler() {
+		RestException restException = new RestException("Request error", 3, "User does not exist. Please, check your request");
+		return new ResponseEntity<>(restException, HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(UserRolesDoesNotExistException.class)
+	public ResponseEntity<?> userRolesDoesNotExistExceptionHandler() {
+		RestException restException = new RestException("Request error", 4, "Your account doesn't have any roles. Please, contact to our mail");
+		return new ResponseEntity<>(restException, HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(PermissionIsAbsentException.class)
+	public ResponseEntity<?> permissionIsAbsentExceptionHandler() {
+		RestException restException = new RestException("Request error", 5, "Your haven't permission for access");
+		return new ResponseEntity<>(restException, HttpStatus.BAD_REQUEST);
+	}
+
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<?> globalExceptionHandler() {
+	public ResponseEntity<?> globalExceptionHandler(Exception exception) {
 		RestException restException = new RestException("Undefined exception", 0, "Try to repeat your action later");
 		return new ResponseEntity<>(restException, HttpStatus.BAD_REQUEST);
 	}
