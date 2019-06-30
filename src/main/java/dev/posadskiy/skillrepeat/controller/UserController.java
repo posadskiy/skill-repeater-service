@@ -1,27 +1,27 @@
 package dev.posadskiy.skillrepeat.controller;
 
-import dev.posadskiy.skillrepeat.dto.Skill;
 import dev.posadskiy.skillrepeat.dto.User;
+import dev.posadskiy.skillrepeat.rest.RequestWrapper;
 
 import java.util.List;
 
 public interface UserController {
-	List<User> getAll(String sessionId);
+	List<User> getAll(RequestWrapper requestWrapper);
 
-	User getUserById(String id, String sessionId);
+	User getUserById(RequestWrapper requestWrapper);
 
-	User findByName(String name, String sessionId);
+	User findByName(RequestWrapper requestWrapper);
 
-	User addUser(User user, String sessionId);
+	User addUser(RequestWrapper requestWrapper);
 
-	User updateUser(User user, String sessionId);
+	User updateUser(RequestWrapper requestWrapper);
 
-	User addSkill(String id, List<Skill> skills, String sessionId);
+	User addSkill(RequestWrapper requestWrapper);
 
-	void deleteUser(String id, String sessionId);
+	void deleteUser(RequestWrapper requestWrapper);
 
-	User repeatSkill(String userId, String skillId, String sessionId);
+	User repeatSkill(RequestWrapper requestWrapper);
 
-	void changeRoles(String userId, List<String> roles, String sessionId);
+	void changeRoles(RequestWrapper requestWrapper);
 
 }

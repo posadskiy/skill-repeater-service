@@ -6,6 +6,7 @@ import dev.posadskiy.skillrepeat.db.UserRepository;
 import dev.posadskiy.skillrepeat.db.model.DbSession;
 import dev.posadskiy.skillrepeat.db.model.DbUser;
 import dev.posadskiy.skillrepeat.exception.*;
+import dev.posadskiy.skillrepeat.rest.RequestWrapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,15 +47,15 @@ public class SecurityAnnotationBeanPostProcessor implements BeanPostProcessor {
 				Method declaredMethod = bean.getClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
 				if (declaredMethod.isAnnotationPresent(Security.class)) {
 					String[] roles = declaredMethod.getAnnotation(Security.class).roles();
-					String sessionId = (String) args[args.length - 1];
-					if (!sessionController.isSessionExist(sessionId)) {
+					RequestWrapper requestWrapper = (RequestWrapper) args[0];
+					if (!sessionController.isSessionExist(requestWrapper.getSessionId())) {
 						throw new SessionDoesNotExistException();
 					}
-					if (sessionController.isSessionExpired(sessionId)) {
+					if (sessionController.isSessionExpired(requestWrapper.getSessionId())) {
 						throw new SessionExpiredException();
 					}
 
-					DbSession sessionById = sessionController.getSessionById(sessionId);
+					DbSession sessionById = sessionController.getSessionById(requestWrapper.getSessionId());
 					Optional<DbUser> byId = userRepository.findById(sessionById.getUserId());
 					if (!byId.isPresent()) {
 						throw new UserDoesNotExistException();
@@ -68,6 +69,11 @@ public class SecurityAnnotationBeanPostProcessor implements BeanPostProcessor {
 					Object[] intersectionRoles = new HashSet<>(userRoles).stream().filter(Arrays.asList(roles)::contains).toArray();
 					if (intersectionRoles.length == 0) {
 						throw new PermissionIsAbsentException();
+					}
+
+					if (!userRoles.contains("ADMIN") && requestWrapper.getUserId() != null
+						&& !requestWrapper.getUserId().equals(byId.get().getId())) {
+						throw new PermissionForGetAnotherUserIsAbsentException();
 					}
 
 					return method.invoke(bean, args);

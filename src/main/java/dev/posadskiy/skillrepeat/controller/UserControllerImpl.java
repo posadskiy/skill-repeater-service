@@ -8,6 +8,7 @@ import dev.posadskiy.skillrepeat.dto.Skill;
 import dev.posadskiy.skillrepeat.dto.User;
 import dev.posadskiy.skillrepeat.exception.UserDoesNotExistException;
 import dev.posadskiy.skillrepeat.mapper.UserMapper;
+import dev.posadskiy.skillrepeat.rest.RequestWrapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,15 +27,15 @@ public class UserControllerImpl implements UserController {
 
 	@Security(roles = "ADMIN")
 	@Override
-	public List<User> getAll(String sessionId) {
+	public List<User> getAll(RequestWrapper requestWrapper) {
 		List<DbUser> users = userRepository.findAll();
 		return users.parallelStream().map(userMapper::mapToDto).collect(Collectors.toList());
 	}
 
 	@Security
 	@Override
-	public User getUserById(String id, String sessionId) {
-		Optional<DbUser> optionalUser = userRepository.findById(id);
+	public User getUserById(RequestWrapper requestWrapper) {
+		Optional<DbUser> optionalUser = userRepository.findById(requestWrapper.getUserId());
 
 		if (!optionalUser.isPresent()) throw new UserDoesNotExistException();
 
@@ -45,7 +46,8 @@ public class UserControllerImpl implements UserController {
 
 	@Security
 	@Override
-	public User findByName(String name, String sessionId) {
+	public User findByName(RequestWrapper requestWrapper) {
+		String name = (String) requestWrapper.getData();
 		DbUser byName = userRepository.findByName(name);
 
 		if (byName == null) throw new UserDoesNotExistException();
@@ -55,7 +57,8 @@ public class UserControllerImpl implements UserController {
 
 	@Security(roles = "ADMIN")
 	@Override
-	public User addUser(User user, String sessionId) {
+	public User addUser(RequestWrapper requestWrapper) {
+		User user = (User) requestWrapper.getData();
 		return userMapper.mapToDto(
 			userRepository.save(
 				userMapper.mapFromDto(user)));
@@ -63,7 +66,8 @@ public class UserControllerImpl implements UserController {
 
 	@Security(roles = "ADMIN")
 	@Override
-	public User updateUser(User user, String sessionId) {
+	public User updateUser(RequestWrapper requestWrapper) {
+		User user = (User) requestWrapper.getData();
 		return userMapper.mapToDto(
 			userRepository.save(
 				userMapper.mapFromDto(user)));
@@ -71,7 +75,10 @@ public class UserControllerImpl implements UserController {
 
 	@Security
 	@Override
-	public User addSkill(String userId, List<Skill> skills, String sessionId) {
+	public User addSkill(RequestWrapper requestWrapper) {
+		List<Skill> skills = (List<Skill>) requestWrapper.getData();
+		String userId = requestWrapper.getUserId();
+
 		Optional<DbUser> optionalDbUser = userRepository.findById(userId);
 		if (!optionalDbUser.isPresent()) throw new UserDoesNotExistException();
 
@@ -88,13 +95,17 @@ public class UserControllerImpl implements UserController {
 
 	@Security(roles = "ADMIN")
 	@Override
-	public void deleteUser(String id, String sessionId) {
-		userRepository.deleteById(id);
+	public void deleteUser(RequestWrapper requestWrapper) {
+		String userId = requestWrapper.getUserId();
+		userRepository.deleteById(userId);
 	}
 
 	@Security
 	@Override
-	public User repeatSkill(String userId, String skillId, String sessionId) {
+	public User repeatSkill(RequestWrapper requestWrapper) {
+		String skillId = (String) requestWrapper.getData();
+		String userId = requestWrapper.getUserId();
+
 		Optional<DbUser> optionalUser = userRepository.findById(userId);
 
 		if (!optionalUser.isPresent()) return null;
@@ -111,7 +122,10 @@ public class UserControllerImpl implements UserController {
 
 	@Security(roles = "ADMIN")
 	@Override
-	public void changeRoles(String userId, List<String> roles, String sessionId) {
+	public void changeRoles(RequestWrapper requestWrapper) {
+		List<String> roles = (List<String>) requestWrapper.getData();
+		String userId = requestWrapper.getUserId();
+
 		Optional<DbUser> byId = userRepository.findById(userId);
 		if (!byId.isPresent()) throw new UserDoesNotExistException();
 

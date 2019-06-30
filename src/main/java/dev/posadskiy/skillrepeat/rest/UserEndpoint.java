@@ -8,6 +8,8 @@ import dev.posadskiy.skillrepeat.db.model.DbUser;
 import dev.posadskiy.skillrepeat.dto.Auth;
 import dev.posadskiy.skillrepeat.dto.Skill;
 import dev.posadskiy.skillrepeat.dto.User;
+import dev.posadskiy.skillrepeat.exception.UserDoesNotExistException;
+import dev.posadskiy.skillrepeat.exception.UserPasswordDoesNotMatchException;
 import dev.posadskiy.skillrepeat.mapper.AuthMapper;
 import dev.posadskiy.skillrepeat.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,64 +43,64 @@ public class UserEndpoint {
 
 	@RequestMapping("/all")
 	public List<User> getAll(@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.getAll(sessionId);
+		return controller.getAll(new RequestWrapper().sessionId(sessionId));
 	}
 
 	@GetMapping("/id/{id}")
 	public User getUserById(@PathVariable("id") final String id, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.getUserById(id, sessionId);
+		return controller.getUserById(new RequestWrapper().userId(id).sessionId(sessionId));
 	}
 
 	@GetMapping("/name/{name}")
 	public User getUserByName(@PathVariable("name") final String name, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.findByName(name, sessionId);
+		return controller.findByName(new RequestWrapper().data(name).sessionId(sessionId));
 	}
 
 	@PutMapping("/")
 	public User addUser(@RequestBody final User user, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.addUser(user, sessionId);
+		return controller.addUser(new RequestWrapper().data(user).userId(user.getId()).sessionId(sessionId));
 	}
 
 	@PostMapping("/")
 	public User updateUser(@RequestBody final User user, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.updateUser(user, sessionId);
+		return controller.updateUser(new RequestWrapper().data(user).userId(user.getId()).sessionId(sessionId));
 	}
 
 	@PostMapping("/{userId}/skill/add")
 	public User addSkill(@PathVariable("userId") final String userId, @RequestBody final List<Skill> skills,
 						 @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.addSkill(userId, skills, sessionId);
+		return controller.addSkill(new RequestWrapper().data(skills).userId(userId).sessionId(sessionId));
 	}
 
-	@DeleteMapping("/delete/{id}")
-	public void deleteUser(@PathVariable(value = "id") final String id, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		controller.deleteUser(id, sessionId);
+	@DeleteMapping("/{id}")
+	public void deleteUser(@PathVariable(value = "id") final String userId, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		controller.deleteUser(new RequestWrapper().userId(userId).sessionId(sessionId));
 	}
 
 	@PostMapping("/{userId}/skill/repeat/{skillId}")
 	public User repeatSkill(@PathVariable(value = "userId") final String userId,
 							@PathVariable(value = "skillId") final String skillId,
 							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.repeatSkill(userId, skillId, sessionId);
+		return controller.repeatSkill(new RequestWrapper().data(skillId).userId(userId).sessionId(sessionId));
 	}
 
 	@PostMapping("/auth")
 	public User auth(@RequestBody final Auth auth, final HttpServletResponse response) throws AuthException {
 		DbUser foundUser = userRepository.findByName(auth.getLogin());
 		if (foundUser == null) {
-			throw new AuthException("User not found");
+			throw new UserDoesNotExistException();
 		}
 
-		if (auth.getPassword().equals(foundUser.getPassword())) {
-			User user = userMapper.mapToDto(foundUser);
-			DbSession session = sessionRepository.save(new DbSession(user.getId(), System.currentTimeMillis() + 100_000));
-			Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
-			cookie.setPath("/");
-			response.addCookie(cookie);
-			return user;
+		if (!auth.getPassword().equals(foundUser.getPassword())) {
+			throw new UserPasswordDoesNotMatchException();
 		}
 
-		throw new AuthException("Auth is not correct");
+		User user = userMapper.mapToDto(foundUser);
+		DbSession session = sessionRepository.save(new DbSession(user.getId(), System.currentTimeMillis() + 100_000));
+		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
+		cookie.setPath("/");
+		response.addCookie(cookie);
+		return user;
 	}
 
 	@PostMapping("/reg")
@@ -116,6 +118,6 @@ public class UserEndpoint {
 	@PostMapping("/{userId}/changeRoles")
 	public void changeRoles(@PathVariable("userId") final String userId, @RequestBody final List<String> roles,
 							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		controller.changeRoles(userId, roles, sessionId);
+		controller.changeRoles(new RequestWrapper().data(roles).userId(userId).sessionId(sessionId));
 	}
 }

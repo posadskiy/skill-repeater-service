@@ -28,6 +28,12 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(restException, HttpStatus.BAD_REQUEST);
 	}
 
+	@ExceptionHandler(UserPasswordDoesNotMatchException.class)
+	public ResponseEntity<?> userPasswordDoesNotMatchExceptionHandler() {
+		RestException restException = new RestException("Request error", 3, "Password doesn't match");
+		return new ResponseEntity<>(restException, HttpStatus.BAD_REQUEST);
+	}
+
 	@ExceptionHandler(UserRolesDoesNotExistException.class)
 	public ResponseEntity<?> userRolesDoesNotExistExceptionHandler() {
 		RestException restException = new RestException("Request error", 4, "Your account doesn't have any roles. Please, contact to our mail");
@@ -37,6 +43,12 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(PermissionIsAbsentException.class)
 	public ResponseEntity<?> permissionIsAbsentExceptionHandler() {
 		RestException restException = new RestException("Request error", 5, "Your haven't permission for access");
+		return new ResponseEntity<>(restException, HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(PermissionForGetAnotherUserIsAbsentException.class)
+	public ResponseEntity<?> permissionForGetAnotherUserIsAbsentExceptionHandler() {
+		RestException restException = new RestException("Request error", 6, "Your haven't permission for access to another user");
 		return new ResponseEntity<>(restException, HttpStatus.BAD_REQUEST);
 	}
 
