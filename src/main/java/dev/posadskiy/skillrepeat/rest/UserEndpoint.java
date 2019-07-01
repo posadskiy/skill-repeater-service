@@ -15,7 +15,6 @@ import dev.posadskiy.skillrepeat.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.security.auth.message.AuthException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -85,7 +84,7 @@ public class UserEndpoint {
 	}
 
 	@PostMapping("/auth")
-	public User auth(@RequestBody final Auth auth, final HttpServletResponse response) throws AuthException {
+	public User auth(@RequestBody final Auth auth, final HttpServletResponse response) {
 		DbUser foundUser = userRepository.findByName(auth.getLogin());
 		if (foundUser == null) {
 			throw new UserDoesNotExistException();
@@ -113,6 +112,13 @@ public class UserEndpoint {
 		cookie.setPath("/");
 		response.addCookie(cookie);
 		return user;
+	}
+
+	@PostMapping("/{userId}/changePass")
+	public void changePassword(@PathVariable(value = "userId") final String userId,
+							@RequestBody final Auth auth,
+							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		controller.changePassword(new RequestWrapper().data(auth).userId(userId).sessionId(sessionId));
 	}
 
 	@PostMapping("/{userId}/changeRoles")

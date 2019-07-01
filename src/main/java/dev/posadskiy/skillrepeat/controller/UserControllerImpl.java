@@ -4,9 +4,11 @@ import dev.posadskiy.skillrepeat.annotation.Security;
 import dev.posadskiy.skillrepeat.db.UserRepository;
 import dev.posadskiy.skillrepeat.db.model.DbSkill;
 import dev.posadskiy.skillrepeat.db.model.DbUser;
+import dev.posadskiy.skillrepeat.dto.Auth;
 import dev.posadskiy.skillrepeat.dto.Skill;
 import dev.posadskiy.skillrepeat.dto.User;
 import dev.posadskiy.skillrepeat.exception.UserDoesNotExistException;
+import dev.posadskiy.skillrepeat.exception.UserPasswordDoesNotMatchException;
 import dev.posadskiy.skillrepeat.mapper.UserMapper;
 import dev.posadskiy.skillrepeat.rest.RequestWrapper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -108,7 +110,7 @@ public class UserControllerImpl implements UserController {
 
 		Optional<DbUser> optionalUser = userRepository.findById(userId);
 
-		if (!optionalUser.isPresent()) return null;
+		if (!optionalUser.isPresent()) throw new UserDoesNotExistException();
 
 		DbUser user = optionalUser.get();
 		DbSkill skill = CollectionUtils.find(user.getSkills(), item -> item.getId().equals(skillId));
@@ -133,5 +135,26 @@ public class UserControllerImpl implements UserController {
 
 		dbUser.setRoles(roles);
 		userRepository.save(dbUser);
+	}
+
+	@Security
+	@Override
+	public void changePassword(RequestWrapper requestWrapper) {
+		String userId = requestWrapper.getUserId();
+		Auth auth = (Auth) requestWrapper.getData();
+
+		Optional<DbUser> optionalUser = userRepository.findById(userId);
+
+		if (!optionalUser.isPresent()) throw new UserDoesNotExistException();
+
+		DbUser user = optionalUser.get();
+
+		if (!user.getPassword().equals(auth.getOldPassword())) {
+			throw new UserPasswordDoesNotMatchException();
+		}
+
+		user.setPassword(auth.getPassword());
+
+		userRepository.save(user);
 	}
 }

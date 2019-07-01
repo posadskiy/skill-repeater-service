@@ -24,4 +24,5 @@ public interface UserController {
 
 	void changeRoles(RequestWrapper requestWrapper);
 
+	void changePassword(RequestWrapper requestWrapper);
 }
