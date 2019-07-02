@@ -11,6 +11,7 @@ import dev.posadskiy.skillrepeat.mapper.UserMapper;
 import dev.posadskiy.skillrepeat.mapper.UserMapperImpl;
 import dev.posadskiy.skillrepeat.validator.AuthValidator;
 import dev.posadskiy.skillrepeat.validator.UserValidator;
+import dev.posadskiy.skillrepeat.worker.OldSessionGarbageCollectorWorker;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -50,5 +51,10 @@ public class SpringConfiguration {
 	@Bean
 	public SecurityAnnotationBeanPostProcessor securityAnnotationBeanPostProcessor() {
 		return new SecurityAnnotationBeanPostProcessor();
+	}
+
+	@Bean
+	public OldSessionGarbageCollectorWorker oldSessionGarbageCollector() {
+		return new OldSessionGarbageCollectorWorker();
 	}
 }

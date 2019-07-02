@@ -21,6 +21,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
+import static dev.posadskiy.skillrepeat.controller.SessionControllerImpl.SESSION_LIFE_TIME;
+
 @RestController
 @RequestMapping("/user")
 @CrossOrigin(origins = "http://192.168.100.7:3000")
@@ -96,7 +98,7 @@ public class UserEndpoint {
 		}
 
 		User user = userMapper.mapToDto(foundUser);
-		DbSession session = sessionRepository.save(new DbSession(user.getId(), System.currentTimeMillis() + 100_000));
+		DbSession session = sessionRepository.save(new DbSession(user.getId(), System.currentTimeMillis() + SESSION_LIFE_TIME));
 		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
 		cookie.setPath("/");
 		response.addCookie(cookie);
@@ -105,7 +107,7 @@ public class UserEndpoint {
 
 	@PostMapping("/reg")
 	public User registration(@RequestBody final Auth auth, final HttpServletResponse response) {
-		authValidator.authValidate(auth);
+		authValidator.regValidate(auth);
 
 		DbUser foundUser = userRepository.findByName(auth.getLogin());
 		if (foundUser != null) {
@@ -116,7 +118,7 @@ public class UserEndpoint {
 			userRepository.save(
 				authMapper.mapFromDto(auth)));
 
-		DbSession session = sessionRepository.save(new DbSession(user.getId(), System.currentTimeMillis() + 100_000));
+		DbSession session = sessionRepository.save(new DbSession(user.getId(), System.currentTimeMillis() + SESSION_LIFE_TIME));
 		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
 		cookie.setPath("/");
 		response.addCookie(cookie);
