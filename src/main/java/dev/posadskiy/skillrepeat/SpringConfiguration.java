@@ -9,6 +9,8 @@ import dev.posadskiy.skillrepeat.mapper.AuthMapper;
 import dev.posadskiy.skillrepeat.mapper.AuthMapperImpl;
 import dev.posadskiy.skillrepeat.mapper.UserMapper;
 import dev.posadskiy.skillrepeat.mapper.UserMapperImpl;
+import dev.posadskiy.skillrepeat.validator.AuthValidator;
+import dev.posadskiy.skillrepeat.validator.UserValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -33,6 +35,16 @@ public class SpringConfiguration {
 	@Bean
 	public AuthMapper authMapper() {
 		return new AuthMapperImpl();
+	}
+
+	@Bean
+	public AuthValidator authValidator() {
+		return new AuthValidator();
+	}
+
+	@Bean
+	public UserValidator userValidator() {
+		return new UserValidator();
 	}
 
 	@Bean

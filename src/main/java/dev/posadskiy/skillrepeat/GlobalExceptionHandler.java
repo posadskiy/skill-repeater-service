@@ -52,6 +52,18 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(restException, HttpStatus.BAD_REQUEST);
 	}
 
+	@ExceptionHandler(UserValidationException.class)
+	public ResponseEntity<?> userValidationExceptionHandler(UserValidationException ex) {
+		RestException restException = new RestException("Validation error", 7, ex.getReason());
+		return new ResponseEntity<>(restException, HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(UserAlreadyExistException.class)
+	public ResponseEntity<?> userAlreadyExistExceptionHandler() {
+		RestException restException = new RestException("Request error", 8, "User login already exist in system. Try to use different login");
+		return new ResponseEntity<>(restException, HttpStatus.BAD_REQUEST);
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> globalExceptionHandler(Exception exception) {
 		RestException restException = new RestException("Undefined exception", 0, "Try to repeat your action later");

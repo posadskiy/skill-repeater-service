@@ -11,6 +11,7 @@ import dev.posadskiy.skillrepeat.exception.UserDoesNotExistException;
 import dev.posadskiy.skillrepeat.exception.UserPasswordDoesNotMatchException;
 import dev.posadskiy.skillrepeat.mapper.UserMapper;
 import dev.posadskiy.skillrepeat.rest.RequestWrapper;
+import dev.posadskiy.skillrepeat.validator.UserValidator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -21,11 +22,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class UserControllerImpl implements UserController {
+
 	@Autowired
 	private UserRepository userRepository;
 
 	@Autowired
 	private UserMapper userMapper;
+
+	@Autowired
+	private UserValidator userValidator;
 
 	@Security(roles = "ADMIN")
 	@Override
@@ -37,7 +42,8 @@ public class UserControllerImpl implements UserController {
 	@Security
 	@Override
 	public User getUserById(RequestWrapper requestWrapper) {
-		Optional<DbUser> optionalUser = userRepository.findById(requestWrapper.getUserId());
+		String userId = requestWrapper.getUserId();
+		Optional<DbUser> optionalUser = userRepository.findById(userId);
 
 		if (!optionalUser.isPresent()) throw new UserDoesNotExistException();
 
@@ -59,17 +65,11 @@ public class UserControllerImpl implements UserController {
 
 	@Security(roles = "ADMIN")
 	@Override
-	public User addUser(RequestWrapper requestWrapper) {
-		User user = (User) requestWrapper.getData();
-		return userMapper.mapToDto(
-			userRepository.save(
-				userMapper.mapFromDto(user)));
-	}
-
-	@Security(roles = "ADMIN")
-	@Override
 	public User updateUser(RequestWrapper requestWrapper) {
 		User user = (User) requestWrapper.getData();
+
+		userValidator.userValidate(user);
+
 		return userMapper.mapToDto(
 			userRepository.save(
 				userMapper.mapFromDto(user)));
@@ -142,6 +142,8 @@ public class UserControllerImpl implements UserController {
 	public void changePassword(RequestWrapper requestWrapper) {
 		String userId = requestWrapper.getUserId();
 		Auth auth = (Auth) requestWrapper.getData();
+
+		userValidator.passwordValidate(auth.getPassword());
 
 		Optional<DbUser> optionalUser = userRepository.findById(userId);
 

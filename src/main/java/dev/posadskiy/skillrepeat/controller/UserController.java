@@ -12,8 +12,6 @@ public interface UserController {
 
 	User findByName(RequestWrapper requestWrapper);
 
-	User addUser(RequestWrapper requestWrapper);
-
 	User updateUser(RequestWrapper requestWrapper);
 
 	User addSkill(RequestWrapper requestWrapper);

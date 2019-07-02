@@ -8,10 +8,12 @@ import dev.posadskiy.skillrepeat.db.model.DbUser;
 import dev.posadskiy.skillrepeat.dto.Auth;
 import dev.posadskiy.skillrepeat.dto.Skill;
 import dev.posadskiy.skillrepeat.dto.User;
+import dev.posadskiy.skillrepeat.exception.UserAlreadyExistException;
 import dev.posadskiy.skillrepeat.exception.UserDoesNotExistException;
 import dev.posadskiy.skillrepeat.exception.UserPasswordDoesNotMatchException;
 import dev.posadskiy.skillrepeat.mapper.AuthMapper;
 import dev.posadskiy.skillrepeat.mapper.UserMapper;
+import dev.posadskiy.skillrepeat.validator.AuthValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,14 +32,16 @@ public class UserEndpoint {
 	private final UserMapper userMapper;
 	private final AuthMapper authMapper;
 	private final UserController controller;
+	private final AuthValidator authValidator;
 
 	@Autowired
-	public UserEndpoint(UserRepository userRepository, SessionRepository sessionRepository, UserMapper userMapper, AuthMapper authMapper, UserController controller) {
+	public UserEndpoint(UserRepository userRepository, SessionRepository sessionRepository, UserMapper userMapper, AuthMapper authMapper, UserController controller, AuthValidator authValidator) {
 		this.userRepository = userRepository;
 		this.sessionRepository = sessionRepository;
 		this.userMapper = userMapper;
 		this.authMapper = authMapper;
 		this.controller = controller;
+		this.authValidator = authValidator;
 	}
 
 	@RequestMapping("/all")
@@ -53,11 +57,6 @@ public class UserEndpoint {
 	@GetMapping("/name/{name}")
 	public User getUserByName(@PathVariable("name") final String name, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
 		return controller.findByName(new RequestWrapper().data(name).sessionId(sessionId));
-	}
-
-	@PutMapping("/")
-	public User addUser(@RequestBody final User user, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.addUser(new RequestWrapper().data(user).userId(user.getId()).sessionId(sessionId));
 	}
 
 	@PostMapping("/")
@@ -85,6 +84,8 @@ public class UserEndpoint {
 
 	@PostMapping("/auth")
 	public User auth(@RequestBody final Auth auth, final HttpServletResponse response) {
+		authValidator.authValidate(auth);
+
 		DbUser foundUser = userRepository.findByName(auth.getLogin());
 		if (foundUser == null) {
 			throw new UserDoesNotExistException();
@@ -104,9 +105,17 @@ public class UserEndpoint {
 
 	@PostMapping("/reg")
 	public User registration(@RequestBody final Auth auth, final HttpServletResponse response) {
+		authValidator.authValidate(auth);
+
+		DbUser foundUser = userRepository.findByName(auth.getLogin());
+		if (foundUser != null) {
+			throw new UserAlreadyExistException();
+		}
+
 		User user = userMapper.mapToDto(
 			userRepository.save(
 				authMapper.mapFromDto(auth)));
+
 		DbSession session = sessionRepository.save(new DbSession(user.getId(), System.currentTimeMillis() + 100_000));
 		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
 		cookie.setPath("/");
@@ -116,8 +125,8 @@ public class UserEndpoint {
 
 	@PostMapping("/{userId}/changePass")
 	public void changePassword(@PathVariable(value = "userId") final String userId,
-							@RequestBody final Auth auth,
-							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+							   @RequestBody final Auth auth,
+							   @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
 		controller.changePassword(new RequestWrapper().data(auth).userId(userId).sessionId(sessionId));
 	}
 
