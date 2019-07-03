@@ -66,14 +66,15 @@ public class SecurityAnnotationBeanPostProcessor implements BeanPostProcessor {
 						throw new UserRolesDoesNotExistException();
 					}
 
-					Object[] intersectionRoles = new HashSet<>(userRoles).stream().filter(Arrays.asList(roles)::contains).toArray();
-					if (intersectionRoles.length == 0) {
-						throw new PermissionIsAbsentException();
-					}
+					if (!userRoles.contains("ADMIN")) {
+						Object[] intersectionRoles = new HashSet<>(userRoles).stream().filter(Arrays.asList(roles)::contains).toArray();
+						if (intersectionRoles.length == 0) {
+							throw new PermissionIsAbsentException();
+						}
 
-					if (!userRoles.contains("ADMIN") && requestWrapper.getUserId() != null
-						&& !requestWrapper.getUserId().equals(byId.get().getId())) {
-						throw new PermissionForGetAnotherUserIsAbsentException();
+						if (requestWrapper.getUserId() != null && !requestWrapper.getUserId().equals(byId.get().getId())) {
+							throw new PermissionForGetAnotherUserIsAbsentException();
+						}
 					}
 
 					return method.invoke(bean, args);
