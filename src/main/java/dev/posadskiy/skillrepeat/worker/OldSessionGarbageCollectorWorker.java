@@ -1,11 +1,13 @@
 package dev.posadskiy.skillrepeat.worker;
 
 import dev.posadskiy.skillrepeat.db.SessionRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import static dev.posadskiy.skillrepeat.controller.SessionControllerImpl.SESSION_LIFE_TIME;
 
+@Slf4j
 public class OldSessionGarbageCollectorWorker {
 	private static final String CRON_EVERY_DAY_AT_3_AM = "0 0 3 * * *";
 
@@ -14,9 +16,11 @@ public class OldSessionGarbageCollectorWorker {
 
 	@Scheduled(cron = CRON_EVERY_DAY_AT_3_AM)
 	public void cleanOldSessions() {
+		log.debug("OldSessionGarbageCollectorWorker is started");
 		sessionRepository.findAll()
 			.stream()
 			.filter((s) -> s.getTime() < System.currentTimeMillis() - SESSION_LIFE_TIME)
 			.forEach((s) -> sessionRepository.delete(s));
+		log.debug("OldSessionGarbageCollectorWorker is finished");
 	}
 }
