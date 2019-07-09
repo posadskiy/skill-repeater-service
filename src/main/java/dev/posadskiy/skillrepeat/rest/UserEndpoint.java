@@ -18,14 +18,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
-import static dev.posadskiy.skillrepeat.controller.SessionControllerImpl.SESSION_LIFE_TIME;
+import static dev.posadskiy.skillrepeat.controller.SessionControllerImpl.SESSION_LIFE_TIME_MS;
+import static dev.posadskiy.skillrepeat.controller.SessionControllerImpl.SESSION_LIFE_TIME_S;
 
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = "http://192.168.100.7:3000")
 public class UserEndpoint {
 	private static final String SESSION_COOKIE_NAME = "SESSION_ID";
 
@@ -77,7 +78,7 @@ public class UserEndpoint {
 		controller.deleteUser(new RequestWrapper().userId(userId).sessionId(sessionId));
 	}
 
-	@PostMapping("/{userId}/skill/repeat/{skillId}")
+	@GetMapping("/{userId}/skill/repeat/{skillId}")
 	public User repeatSkill(@PathVariable(value = "userId") final String userId,
 							@PathVariable(value = "skillId") final String skillId,
 							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
@@ -85,7 +86,7 @@ public class UserEndpoint {
 	}
 
 	@PostMapping("/auth")
-	public User auth(@RequestBody final Auth auth, final HttpServletResponse response) {
+	public User auth(@RequestBody final Auth auth, final HttpServletRequest request, final HttpServletResponse response) {
 		authValidator.authValidate(auth);
 
 		DbUser foundUser = userRepository.findByName(auth.getLogin());
@@ -98,15 +99,16 @@ public class UserEndpoint {
 		}
 
 		User user = userMapper.mapToDto(foundUser);
-		DbSession session = sessionRepository.save(new DbSession(user.getId(), System.currentTimeMillis() + SESSION_LIFE_TIME));
+		DbSession session = sessionRepository.save(new DbSession(request.getSession().getId(), user.getId(), System.currentTimeMillis() + SESSION_LIFE_TIME_MS));
 		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
 		cookie.setPath("/");
+		cookie.setMaxAge(SESSION_LIFE_TIME_S);
 		response.addCookie(cookie);
 		return user;
 	}
 
 	@PostMapping("/reg")
-	public User registration(@RequestBody final Auth auth, final HttpServletResponse response) {
+	public User registration(@RequestBody final Auth auth, final HttpServletRequest request, final HttpServletResponse response) {
 		authValidator.regValidate(auth);
 
 		DbUser foundUser = userRepository.findByName(auth.getLogin());
@@ -118,9 +120,10 @@ public class UserEndpoint {
 			userRepository.save(
 				authMapper.mapFromDto(auth)));
 
-		DbSession session = sessionRepository.save(new DbSession(user.getId(), System.currentTimeMillis() + SESSION_LIFE_TIME));
+		DbSession session = sessionRepository.save(new DbSession(request.getSession().getId(), user.getId(), System.currentTimeMillis() + SESSION_LIFE_TIME_MS));
 		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
 		cookie.setPath("/");
+		cookie.setMaxAge(SESSION_LIFE_TIME_S);
 		response.addCookie(cookie);
 		return user;
 	}
