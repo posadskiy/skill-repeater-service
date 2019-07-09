@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import static dev.posadskiy.skillrepeat.controller.SessionControllerImpl.SESSION_LIFE_TIME;
+import static dev.posadskiy.skillrepeat.controller.SessionControllerImpl.SESSION_LIFE_TIME_MS;
 
 @Slf4j
 public class OldSessionGarbageCollectorWorker {
@@ -19,7 +19,7 @@ public class OldSessionGarbageCollectorWorker {
 		log.debug("OldSessionGarbageCollectorWorker is started");
 		sessionRepository.findAll()
 			.stream()
-			.filter((s) -> s.getTime() < System.currentTimeMillis() - SESSION_LIFE_TIME)
+			.filter((s) -> s.getTime() < System.currentTimeMillis() - SESSION_LIFE_TIME_MS)
 			.forEach((s) -> sessionRepository.delete(s));
 		log.debug("OldSessionGarbageCollectorWorker is finished");
 	}

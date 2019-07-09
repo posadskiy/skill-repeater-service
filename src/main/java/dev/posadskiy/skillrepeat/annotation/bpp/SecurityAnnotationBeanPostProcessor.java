@@ -28,7 +28,6 @@ public class SecurityAnnotationBeanPostProcessor implements BeanPostProcessor {
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		System.out.println();
 		for (Method method : bean.getClass().getMethods()) {
 			if (method.getDeclaredAnnotation(Security.class) != null) {
 				beans.put(beanName, bean.getClass());

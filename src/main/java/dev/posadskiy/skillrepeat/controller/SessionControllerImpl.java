@@ -8,7 +8,8 @@ import java.util.Optional;
 
 public class SessionControllerImpl implements SessionController {
 
-	public static final long SESSION_LIFE_TIME = 8640000000000L;
+	public static final long SESSION_LIFE_TIME_MS = 2592000000L;
+	public static final int SESSION_LIFE_TIME_S = 2592000;
 
 	@Autowired
 	SessionRepository repository;
