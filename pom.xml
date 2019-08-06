@@ -11,6 +11,7 @@
 	<groupId>dev.posadskiy</groupId>
 	<artifactId>skill-repeat</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
 	<name>skill-repeat</name>
 	<description>Skill repeat</description>
 
