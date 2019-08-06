@@ -16,7 +16,11 @@ public class DbUser implements Serializable {
 	private String name;
 	private String email;
 	private String password;
+	private Integer period;
+	private String time;
 	private List<DbSkill> skills;
 	private List<String> roles;
+	private Long registrationDate;
+	private Boolean isAgreeGetEmails;
 
 }

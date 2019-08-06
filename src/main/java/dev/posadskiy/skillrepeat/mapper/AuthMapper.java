@@ -12,7 +12,7 @@ public interface AuthMapper {
     @Mappings({
         @Mapping(source = "login", target = "name"),
         @Mapping(source = "password", target = "password"),
-        @Mapping(source = "email", target = "email")
+        @Mapping(source = "email", target = "email"),
     })
     DbUser mapFromDto(Auth auth);
 }

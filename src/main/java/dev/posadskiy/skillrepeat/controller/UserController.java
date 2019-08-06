@@ -16,6 +16,8 @@ public interface UserController {
 
 	User addSkill(RequestWrapper requestWrapper);
 
+	User deleteSkill(RequestWrapper requestWrapper);
+
 	void deleteUser(RequestWrapper requestWrapper);
 
 	User repeatSkill(RequestWrapper requestWrapper);
@@ -23,4 +25,8 @@ public interface UserController {
 	void changeRoles(RequestWrapper requestWrapper);
 
 	void changePassword(RequestWrapper requestWrapper);
+
+	User changeEmail(RequestWrapper requestWrapper);
+
+	User changeNotification(RequestWrapper requestWrapper);
 }

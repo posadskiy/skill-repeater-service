@@ -12,6 +12,8 @@ public class DbSkill {
     @Id
     private String id;
     private String name;
+    private Integer period;
+    private Integer time;
     private Date lastRepeat;
     private Integer level;
 }

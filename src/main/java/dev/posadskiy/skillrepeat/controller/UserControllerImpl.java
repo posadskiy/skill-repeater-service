@@ -11,6 +11,7 @@ import dev.posadskiy.skillrepeat.exception.UserDoesNotExistException;
 import dev.posadskiy.skillrepeat.exception.UserPasswordDoesNotMatchException;
 import dev.posadskiy.skillrepeat.mapper.UserMapper;
 import dev.posadskiy.skillrepeat.rest.RequestWrapper;
+import dev.posadskiy.skillrepeat.validator.AuthValidator;
 import dev.posadskiy.skillrepeat.validator.UserValidator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,9 @@ public class UserControllerImpl implements UserController {
 
 	@Autowired
 	private UserValidator userValidator;
+
+	@Autowired
+	private AuthValidator authValidator;
 
 	@Security(roles = "ADMIN")
 	@Override
@@ -63,16 +67,25 @@ public class UserControllerImpl implements UserController {
 		return userMapper.mapToDto(byName);
 	}
 
-	@Security(roles = "ADMIN")
+	@Security
 	@Override
 	public User updateUser(RequestWrapper requestWrapper) {
 		User user = (User) requestWrapper.getData();
 
-		userValidator.userValidate(user);
+		userValidator.userAccountUpdateValidate(user);
+
+		DbUser dbUser = userMapper.mapFromDto(user);
+		Optional<DbUser> optionalDbUser = userRepository.findById(dbUser.getId());
+		if (!optionalDbUser.isPresent()) throw new UserDoesNotExistException();
+
+		DbUser dbUserForSave = optionalDbUser.get();
+		dbUserForSave.setName(dbUser.getName());
+		dbUserForSave.setIsAgreeGetEmails(dbUser.getIsAgreeGetEmails());
 
 		return userMapper.mapToDto(
 			userRepository.save(
-				userMapper.mapFromDto(user)));
+				dbUserForSave
+			));
 	}
 
 	@Security
@@ -91,6 +104,22 @@ public class UserControllerImpl implements UserController {
 			dbUser.setSkills(new ArrayList<>());
 		}
 		dbUser.getSkills().addAll(dbSkills);
+
+		return userMapper.mapToDto(userRepository.save(dbUser));
+	}
+
+	@Override
+	public User deleteSkill(RequestWrapper requestWrapper) {
+		String skillId = (String) requestWrapper.getData();
+		String userId = requestWrapper.getUserId();
+
+		Optional<DbUser> optionalDbUser = userRepository.findById(userId);
+		if (!optionalDbUser.isPresent()) throw new UserDoesNotExistException();
+
+		DbUser dbUser = optionalDbUser.get();
+		List<DbSkill> skills = dbUser.getSkills().stream().filter(skill -> !skill.getId().equals(skillId)).collect(Collectors.toList());
+
+		dbUser.setSkills(skills);
 
 		return userMapper.mapToDto(userRepository.save(dbUser));
 	}
@@ -158,5 +187,46 @@ public class UserControllerImpl implements UserController {
 		user.setPassword(auth.getPassword());
 
 		userRepository.save(user);
+	}
+
+	@Override
+	public User changeEmail(RequestWrapper requestWrapper) {
+		String userId = requestWrapper.getUserId();
+		Auth auth = (Auth) requestWrapper.getData();
+
+		authValidator.changeEmailValidate(auth);
+
+		Optional<DbUser> optionalUser = userRepository.findById(userId);
+
+		if (!optionalUser.isPresent()) throw new UserDoesNotExistException();
+
+		DbUser user = optionalUser.get();
+
+		user.setEmail(auth.getEmail());
+
+		return userMapper.mapToDto(
+			userRepository.save(user)
+		);
+	}
+
+	@Override
+	public User changeNotification(RequestWrapper requestWrapper) {
+		String userId = requestWrapper.getUserId();
+		User user = (User) requestWrapper.getData();
+
+		//authValidator.changeEmailValidate(auth);
+
+		Optional<DbUser> optionalUser = userRepository.findById(userId);
+
+		if (!optionalUser.isPresent()) throw new UserDoesNotExistException();
+
+		DbUser dbUser = optionalUser.get();
+
+		dbUser.setPeriod(user.getPeriod());
+		dbUser.setTime(user.getTime());
+
+		return userMapper.mapToDto(
+			userRepository.save(dbUser)
+		);
 	}
 }

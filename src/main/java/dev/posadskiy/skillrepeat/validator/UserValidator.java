@@ -8,9 +8,12 @@ import org.springframework.stereotype.Component;
 public class UserValidator {
 
 	public void userValidate(User user) {
-		loginValidate(user.getLogin());
 		userNameValidate(user.getName());
 		emailValidate(user.getEmail());
+	}
+
+	public void userAccountUpdateValidate(User user) {
+		userNameValidate(user.getName());
 	}
 
 	public void passwordValidate(String password) {
@@ -19,29 +22,7 @@ public class UserValidator {
 		}
 	}
 
-	private void loginValidate(String login) {
-		if (StringUtils.isBlank(login)) {
-			throw new UserValidationException("Name is empty or blank");
-		}
-
-		if (login.length() < 3) {
-			throw new UserValidationException("Name is too short");
-		}
-
-		if (!StringUtils.isAsciiPrintable(login)) {
-			throw new UserValidationException("Login consists unsupported letters");
-		}
-	}
-
 	private void userNameValidate(String name) {
-		if (StringUtils.isBlank(name)) {
-			throw new UserValidationException("Name is empty or blank");
-		}
-
-		if (name.length() < 2) {
-			throw new UserValidationException("Name is too short");
-		}
-
 		if (!StringUtils.isAsciiPrintable(name)) {
 			throw new UserValidationException("Name consists unsupported letters");
 		}
