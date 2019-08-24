@@ -14,6 +14,7 @@ import dev.posadskiy.skillrepeat.rest.RequestWrapper;
 import dev.posadskiy.skillrepeat.validator.AuthValidator;
 import dev.posadskiy.skillrepeat.validator.UserValidator;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -104,6 +105,36 @@ public class UserControllerImpl implements UserController {
 			dbUser.setSkills(new ArrayList<>());
 		}
 		dbUser.getSkills().addAll(dbSkills);
+
+		return userMapper.mapToDto(userRepository.save(dbUser));
+	}
+
+	@Security
+	@Override
+	public User editSkill(RequestWrapper requestWrapper) {
+		Skill skill = (Skill) requestWrapper.getData();
+		if (StringUtils.isBlank(skill.getId())) {
+			throw new RuntimeException();
+		}
+		String userId = requestWrapper.getUserId();
+
+		Optional<DbUser> optionalDbUser = userRepository.findById(userId);
+		if (!optionalDbUser.isPresent()) throw new UserDoesNotExistException();
+
+		DbUser dbUser = optionalDbUser.get();
+		DbSkill skillForChange = CollectionUtils.find(dbUser.getSkills(), (dbSkill) -> dbSkill.getId().equals(skill.getId()));
+
+		if (skill.getName() != null && !skill.getName().equals(skillForChange.getName())) {
+			skillForChange.setName(skill.getName());
+		}
+
+		if (skill.getPeriod() != null && !skill.getPeriod().equals(skillForChange.getPeriod())) {
+			skillForChange.setPeriod(skill.getPeriod());
+		}
+
+		if (skill.getTime() != null && !skill.getTime().equals(skillForChange.getTime())) {
+			skillForChange.setTime(skill.getTime());
+		}
 
 		return userMapper.mapToDto(userRepository.save(dbUser));
 	}

@@ -16,6 +16,8 @@ public interface UserController {
 
 	User addSkill(RequestWrapper requestWrapper);
 
+	User editSkill(RequestWrapper requestWrapper);
+
 	User deleteSkill(RequestWrapper requestWrapper);
 
 	void deleteUser(RequestWrapper requestWrapper);

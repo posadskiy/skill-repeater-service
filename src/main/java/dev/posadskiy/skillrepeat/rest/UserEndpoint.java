@@ -149,6 +149,30 @@ public class UserEndpoint {
 		return user;
 	}
 
+	@PostMapping("/regWithSkills")
+	public User registrationWithSkills(@RequestBody final User user, final HttpServletRequest request, final HttpServletResponse response) {
+		//authValidator.regValidate(auth);
+
+		DbUser foundUser = userRepository.findByEmail(user.getEmail());
+		if (foundUser != null) {
+			throw new UserAlreadyExistException();
+		}
+
+		DbUser dbUser = userMapper.mapFromDto(user);
+		dbUser.setRoles(Collections.singletonList("USER"));
+		User createdUser = userMapper.mapToDto(
+			userRepository.save(
+				dbUser));
+
+		DbSession session = sessionRepository.save(new DbSession(request.getSession().getId(), createdUser.getId(), System.currentTimeMillis() + SESSION_LIFE_TIME_MS));
+		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
+		cookie.setPath("/");
+		cookie.setDomain("localhost");
+		cookie.setMaxAge(SESSION_LIFE_TIME_S);
+		response.addCookie(cookie);
+		return createdUser;
+	}
+
 	@PostMapping("/{userId}/changePassword")
 	public void changePassword(@PathVariable(value = "userId") final String userId,
 							   @RequestBody final Auth auth,

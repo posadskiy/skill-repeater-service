@@ -13,7 +13,7 @@ public class DbSkill {
     private String id;
     private String name;
     private Integer period;
-    private Integer time;
+    private String time;
     private Date lastRepeat;
     private Integer level;
 }
