@@ -15,6 +15,7 @@ public class User implements Serializable {
     private String id;
     private String name;
     private String email;
+    private String password;
     private Boolean isAgreeEmails;
     private Integer period;
     private String time;

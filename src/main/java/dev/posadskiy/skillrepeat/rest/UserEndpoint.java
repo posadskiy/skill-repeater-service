@@ -84,6 +84,12 @@ public class UserEndpoint {
 		return controller.addSkill(new RequestWrapper().data(skills).userId(userId).sessionId(sessionId));
 	}
 
+	@PostMapping("/{userId}/skill/edit")
+	public User editSkill(@PathVariable("userId") final String userId, @RequestBody final Skill skill,
+						 @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		return controller.editSkill(new RequestWrapper().data(skill).userId(userId).sessionId(sessionId));
+	}
+
 	@DeleteMapping("/{userId}/skill/{skillId}")
 	public User deleteSkill(@PathVariable("userId") final String userId, @PathVariable final String skillId,
 							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {

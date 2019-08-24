@@ -15,6 +15,7 @@ public interface UserMapper {
     @Mappings({
         @Mapping(source = "id", target = "id"),
         @Mapping(source = "name", target = "name"),
+        @Mapping(target = "password", ignore = true),
         @Mapping(source = "skills", target = "skills")
     })
     User mapToDto(DbUser dbUser);
@@ -51,7 +52,7 @@ public interface UserMapper {
     @AfterMapping
     default void map(Skill skill, @MappingTarget DbSkill dbSkill) {
         dbSkill.setId(skill.getId() != null ? skill.getId() : UUID.randomUUID().toString());
-        dbSkill.setLevel(mapLevel(skill.getLevel()));
+        dbSkill.setLevel(skill.getLevel() != null ? skill.getLevel() : 1);
         dbSkill.setLastRepeat(mapTermRepeatStringToLastRepeatDate(skill.getTermRepeat()));
     }
 
@@ -61,10 +62,6 @@ public interface UserMapper {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -14);
         return date.before(calendar.getTime());
-    }
-
-    default Integer mapLevel(Integer level) {
-        return level != null ? level : 1;
     }
 
     default Date mapTermRepeatStringToLastRepeatDate(String term) {
