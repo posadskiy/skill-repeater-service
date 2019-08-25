@@ -207,7 +207,7 @@ public class UserEndpoint {
 			throw new UserDoesNotExistException();
 		}
 
-		String hash = RandomStringUtils.randomAscii(10);
+		String hash = RandomStringUtils.randomAlphabetic(10);
 		DbResetPassword dbResetPassword = new DbResetPassword();
 		dbResetPassword.setUserId(foundUser.getId());
 		dbResetPassword.setHash(hash);

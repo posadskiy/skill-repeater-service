@@ -15,5 +15,6 @@ public class DbSkill {
     private Integer period;
     private String time;
     private Date lastRepeat;
+    private Date lastNotification;
     private Integer level;
 }
