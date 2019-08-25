@@ -11,6 +11,7 @@ import dev.posadskiy.skillrepeat.mapper.UserMapper;
 import dev.posadskiy.skillrepeat.mapper.UserMapperImpl;
 import dev.posadskiy.skillrepeat.validator.AuthValidator;
 import dev.posadskiy.skillrepeat.validator.UserValidator;
+import dev.posadskiy.skillrepeat.worker.EmailNotificationWorker;
 import dev.posadskiy.skillrepeat.worker.OldSessionGarbageCollectorWorker;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +19,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+import org.thymeleaf.templateresolver.ITemplateResolver;
 
 @Configuration
 public class SpringConfiguration {
@@ -63,6 +67,11 @@ public class SpringConfiguration {
 	}
 
 	@Bean
+	public EmailNotificationWorker emailNotificationWorker() {
+		return new EmailNotificationWorker();
+	}
+
+	@Bean
 	public FilterRegistrationBean corsFilter() {
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration config = new CorsConfiguration();
@@ -75,4 +84,16 @@ public class SpringConfiguration {
 		bean.setOrder(0);
 		return bean;
 	}
+
+	@Bean
+	public ITemplateResolver templateResolver()
+	{
+		ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+		templateResolver.setPrefix("templates/");
+		templateResolver.setSuffix(".html");
+		templateResolver.setTemplateMode(TemplateMode.HTML);
+
+		return templateResolver;
+	}
+
 }
