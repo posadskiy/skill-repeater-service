@@ -10,10 +10,10 @@
 	</parent>
 	<groupId>dev.posadskiy</groupId>
 	<artifactId>skill-repeat</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.2.0</version>
 	<packaging>war</packaging>
 	<name>skill-repeat</name>
-	<description>Skill repeat</description>
+	<description>Skill Repeater</description>
 
 	<properties>
 		<maven.compiler.source>8</maven.compiler.source>
