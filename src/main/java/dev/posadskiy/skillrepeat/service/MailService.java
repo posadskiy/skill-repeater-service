@@ -44,14 +44,16 @@ public class MailService {
 	}
 
 	public void sendResetPasswordMessage(String to, String hash) {
-		SimpleMailMessage message = new SimpleMailMessage();
-		message.setTo(to);
-		message.setSubject("Reset password for Skill Repeater");
-		message.setText("Forgot your password?\n\n" +
-			"No worries – it happens! \n" +
-			"Simply click on the link below to get a new one. It's as easy as that.\n\n" +
-			"https://server.posadskiy.space/user/resetPass/" + hash);
+		MimeMessage mimeMessage = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
+		try {
+			helper.setTo(to);
+			helper.setSubject("Reset password for Skill Repeater");
+			helper.setText(mailTemplateEngine.generateRepeatPasswordEmailHtml(hash), true);
 
-		mailSender.send(message);
+			mailSender.send(mimeMessage);
+		} catch (MessagingException e) {
+			log.info("Error when sending reset password message", e);
+		}
 	}
 }
