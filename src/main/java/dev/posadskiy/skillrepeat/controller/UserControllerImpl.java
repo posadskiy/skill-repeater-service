@@ -139,6 +139,7 @@ public class UserControllerImpl implements UserController {
 		return userMapper.mapToDto(userRepository.save(dbUser));
 	}
 
+	@Security
 	@Override
 	public User deleteSkill(RequestWrapper requestWrapper) {
 		String skillId = (String) requestWrapper.getData();
