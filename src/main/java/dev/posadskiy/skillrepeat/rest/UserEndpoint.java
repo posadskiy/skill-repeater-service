@@ -117,7 +117,7 @@ public class UserEndpoint {
 	public User auth(@RequestBody final Auth auth, final HttpServletRequest request, final HttpServletResponse response) {
 		authValidator.authValidate(auth);
 
-		DbUser foundUser = userRepository.findByEmail(auth.getEmail());
+		DbUser foundUser = userRepository.findByEmail(auth.getEmail().toLowerCase());
 		if (foundUser == null) {
 			throw new UserDoesNotExistException();
 		}
@@ -140,7 +140,7 @@ public class UserEndpoint {
 	public User registration(@RequestBody final Auth auth, final HttpServletRequest request, final HttpServletResponse response) {
 		authValidator.regValidate(auth);
 
-		DbUser foundUser = userRepository.findByEmail(auth.getEmail());
+		DbUser foundUser = userRepository.findByEmail(auth.getEmail().toLowerCase());
 		if (foundUser != null) {
 			throw new UserAlreadyExistException();
 		}
@@ -164,7 +164,7 @@ public class UserEndpoint {
 	public User registrationWithSkills(@RequestBody final User user, final HttpServletRequest request, final HttpServletResponse response) {
 		//authValidator.regValidate(auth);
 
-		DbUser foundUser = userRepository.findByEmail(user.getEmail());
+		DbUser foundUser = userRepository.findByEmail(user.getEmail().toLowerCase());
 		if (foundUser != null) {
 			throw new UserAlreadyExistException();
 		}
@@ -207,7 +207,7 @@ public class UserEndpoint {
 
 	@PostMapping("/forgotPass")
 	public void forgotPassword(@RequestBody final Auth auth) {
-		DbUser foundUser = userRepository.findByEmail(auth.getEmail());
+		DbUser foundUser = userRepository.findByEmail(auth.getEmail().toLowerCase());
 		if (foundUser == null) {
 			throw new UserDoesNotExistException();
 		}
