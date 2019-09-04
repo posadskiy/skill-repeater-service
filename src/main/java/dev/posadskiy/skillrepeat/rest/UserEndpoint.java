@@ -1,13 +1,16 @@
 package dev.posadskiy.skillrepeat.rest;
 
 import dev.posadskiy.skillrepeat.controller.UserController;
+import dev.posadskiy.skillrepeat.db.MessageRepository;
 import dev.posadskiy.skillrepeat.db.ResetPasswordRepository;
 import dev.posadskiy.skillrepeat.db.SessionRepository;
 import dev.posadskiy.skillrepeat.db.UserRepository;
+import dev.posadskiy.skillrepeat.db.model.DbMessage;
 import dev.posadskiy.skillrepeat.db.model.DbResetPassword;
 import dev.posadskiy.skillrepeat.db.model.DbSession;
 import dev.posadskiy.skillrepeat.db.model.DbUser;
 import dev.posadskiy.skillrepeat.dto.Auth;
+import dev.posadskiy.skillrepeat.dto.Message;
 import dev.posadskiy.skillrepeat.dto.Skill;
 import dev.posadskiy.skillrepeat.dto.User;
 import dev.posadskiy.skillrepeat.exception.UserAlreadyExistException;
@@ -40,6 +43,7 @@ public class UserEndpoint {
 	private final UserRepository userRepository;
 	private final SessionRepository sessionRepository;
 	private final ResetPasswordRepository resetPasswordRepository;
+	private final MessageRepository messageRepository;
 	private final UserMapper userMapper;
 	private final AuthMapper authMapper;
 	private final UserController controller;
@@ -47,10 +51,11 @@ public class UserEndpoint {
 	private final MailService mailService;
 
 	@Autowired
-	public UserEndpoint(UserRepository userRepository, SessionRepository sessionRepository, ResetPasswordRepository resetPasswordRepository, UserMapper userMapper, AuthMapper authMapper, UserController controller, AuthValidator authValidator, MailService mailService) {
+	public UserEndpoint(UserRepository userRepository, SessionRepository sessionRepository, ResetPasswordRepository resetPasswordRepository, MessageRepository messageRepository, UserMapper userMapper, AuthMapper authMapper, UserController controller, AuthValidator authValidator, MailService mailService) {
 		this.userRepository = userRepository;
 		this.sessionRepository = sessionRepository;
 		this.resetPasswordRepository = resetPasswordRepository;
+		this.messageRepository = messageRepository;
 		this.userMapper = userMapper;
 		this.authMapper = authMapper;
 		this.controller = controller;
@@ -245,5 +250,14 @@ public class UserEndpoint {
 	public void changeRoles(@PathVariable("userId") final String userId, @RequestBody final List<String> roles,
 							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
 		controller.changeRoles(new RequestWrapper().data(roles).userId(userId).sessionId(sessionId));
+	}
+
+	@PostMapping("/{userId}/sendMessage")
+	public void sendMessage(@PathVariable("userId") final String userId, @RequestBody final Message message,
+							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		DbMessage dbMessage = new DbMessage();
+		dbMessage.setUserId(userId);
+		dbMessage.setMessage(message.getMessage());
+		messageRepository.save(dbMessage);
 	}
 }
