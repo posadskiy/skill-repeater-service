@@ -16,7 +16,7 @@ public class User implements Serializable {
     private String name;
     private String email;
     private String password;
-    private Boolean isAgreeEmails;
+    private Boolean isAgreeGetEmails;
     private Integer period;
     private String time;
     private List<Skill> skills;
