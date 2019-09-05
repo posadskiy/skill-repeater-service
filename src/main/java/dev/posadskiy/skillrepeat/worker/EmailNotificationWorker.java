@@ -74,7 +74,6 @@ public class EmailNotificationWorker {
 				LocalDateTime repeatTime = nowTime.withHour(Integer.parseInt(timeParts[0])).withMinute(Integer.parseInt(timeParts[1]));
 				return repeatTime.isBefore(nowTime);
 			})
-				.peek((skill) -> skill.setLastNotification(new Date()))
 				.collect(Collectors.toList());
 
 			if (CollectionUtils.isEmpty(skills)) return;
@@ -83,6 +82,15 @@ public class EmailNotificationWorker {
 			String joinedSkills = StringUtils.join(skillNames, ", ");
 
 			mailService.sendRepeatMessage(user.getEmail(), "Time to train skills", joinedSkills, LocalDate.now().format(DateTimeFormatter.ofPattern("d MMM")), skills.get(0).getTime());
+
+			List<DbSkill> updatedSkills = user.getSkills().stream().peek(skill -> {
+				if (skills.contains(skill)) {
+					skill.setLastNotification(new Date());
+				}
+			})
+				.collect(Collectors.toList());
+			user.setSkills(updatedSkills);
+			userRepository.save(user);
 		});
 		log.info("Email notification worker finished");
 	}
