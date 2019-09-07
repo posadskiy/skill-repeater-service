@@ -7,6 +7,7 @@ import dev.posadskiy.skillrepeat.db.model.DbUser;
 import dev.posadskiy.skillrepeat.dto.Auth;
 import dev.posadskiy.skillrepeat.dto.Skill;
 import dev.posadskiy.skillrepeat.dto.User;
+import dev.posadskiy.skillrepeat.exception.TooMuchSkillsForUserException;
 import dev.posadskiy.skillrepeat.exception.UserDoesNotExistException;
 import dev.posadskiy.skillrepeat.exception.UserPasswordDoesNotMatchException;
 import dev.posadskiy.skillrepeat.mapper.UserMapper;
@@ -22,6 +23,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static dev.posadskiy.skillrepeat.SystemSetting.MAX_SKILLS_NUMBER;
 
 public class UserControllerImpl implements UserController {
 
@@ -99,6 +102,11 @@ public class UserControllerImpl implements UserController {
 		if (!optionalDbUser.isPresent()) throw new UserDoesNotExistException();
 
 		DbUser dbUser = optionalDbUser.get();
+
+		if (dbUser.getSkills().size() + skills.size() > MAX_SKILLS_NUMBER) {
+			throw new TooMuchSkillsForUserException();
+		}
+
 		List<DbSkill> dbSkills = skills.stream().map(userMapper::map).collect(Collectors.toList());
 
 		if (CollectionUtils.isEmpty(dbUser.getSkills())) {
