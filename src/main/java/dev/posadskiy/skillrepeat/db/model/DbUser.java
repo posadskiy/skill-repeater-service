@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -20,7 +21,7 @@ public class DbUser implements Serializable {
 	private String time;
 	private List<DbSkill> skills;
 	private List<String> roles;
-	private Long registrationDate;
+	private Date registrationDate;
 	private Boolean isAgreeGetEmails;
 	private Boolean isConfirmedEmail;
 

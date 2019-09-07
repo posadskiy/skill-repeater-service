@@ -23,6 +23,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -133,36 +134,37 @@ public class UserEndpoint {
 	}
 
 	@PostMapping("/reg")
-	public User registration(@RequestBody final Auth auth, final HttpServletRequest request, final HttpServletResponse response) {
-		authValidator.regValidate(auth);
+	public User registration(@RequestBody final User user, final HttpServletRequest request, final HttpServletResponse response) {
+		//authValidator.regValidate(user);
 
-		DbUser foundUser = userRepository.findByEmail(auth.getEmail().toLowerCase());
+		DbUser foundUser = userRepository.findByEmail(user.getEmail().toLowerCase());
 		if (foundUser != null) {
 			throw new UserAlreadyExistException();
 		}
 
-		DbUser dbUser = authMapper.mapFromDto(auth);
+		DbUser dbUser = userMapper.mapFromDto(user);
 		dbUser.setRoles(Collections.singletonList("USER"));
-		User user = userMapper.mapToDto(
+		dbUser.setRegistrationDate(new Date());
+		User savedUser = userMapper.mapToDto(
 			userRepository.save(
 				dbUser));
 
 		String hash = RandomStringUtils.randomAlphabetic(10);
 		DbConfirmEmail dbConfirmEmail = new DbConfirmEmail();
-		dbConfirmEmail.setUserId(dbUser.getId());
+		dbConfirmEmail.setUserId(savedUser.getId());
 		dbConfirmEmail.setHash(hash);
 		dbConfirmEmail.setTime(System.currentTimeMillis());
 		confirmEmailRepository.save(dbConfirmEmail);
 
-		mailService.sendWelcomeMessage(auth.getEmail().toLowerCase(), hash);
+		mailService.sendWelcomeMessage(user.getEmail().toLowerCase(), hash);
 
-		DbSession session = sessionRepository.save(new DbSession(request.getSession().getId(), user.getId(), System.currentTimeMillis() + SESSION_LIFE_TIME_MS));
+		DbSession session = sessionRepository.save(new DbSession(request.getSession().getId(), savedUser.getId(), System.currentTimeMillis() + SESSION_LIFE_TIME_MS));
 		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
 		cookie.setPath("/");
 		cookie.setDomain("localhost");
 		cookie.setMaxAge(SESSION_LIFE_TIME_S);
 		response.addCookie(cookie);
-		return user;
+		return savedUser;
 	}
 
 	@PostMapping("/regWithSkills")
@@ -176,13 +178,14 @@ public class UserEndpoint {
 
 		DbUser dbUser = userMapper.mapFromDto(user);
 		dbUser.setRoles(Collections.singletonList("USER"));
+		dbUser.setRegistrationDate(new Date());
 		User createdUser = userMapper.mapToDto(
 			userRepository.save(
 				dbUser));
 
 		String hash = RandomStringUtils.randomAlphabetic(10);
 		DbConfirmEmail dbConfirmEmail = new DbConfirmEmail();
-		dbConfirmEmail.setUserId(dbUser.getId());
+		dbConfirmEmail.setUserId(createdUser.getId());
 		dbConfirmEmail.setHash(hash);
 		dbConfirmEmail.setTime(System.currentTimeMillis());
 		confirmEmailRepository.save(dbConfirmEmail);
