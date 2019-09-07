@@ -35,7 +35,9 @@ public class EmailNotificationWorker {
 		log.info("Email notification worker started");
 		List<DbUser> users = userRepository.findAll();
 		users.forEach((user) -> {
-			if (user.getIsAgreeGetEmails() == null
+			if (user.getIsConfirmedEmail() == null
+				|| !user.getIsConfirmedEmail()
+				|| user.getIsAgreeGetEmails() == null
 				|| !user.getIsAgreeGetEmails()
 				|| StringUtils.isEmpty(user.getEmail())
 				|| !user.getEmail().contains("@")
