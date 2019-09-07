@@ -12,6 +12,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
@@ -76,9 +77,17 @@ public class SecurityAnnotationBeanPostProcessor implements BeanPostProcessor {
 						}
 					}
 
-					return method.invoke(bean, args);
+					try {
+						return method.invoke(bean, args);
+					} catch (InvocationTargetException exception) {
+						throw exception.getCause();
+					}
 				} else {
-					return method.invoke(bean, args);
+					try {
+						return method.invoke(bean, args);
+					} catch (InvocationTargetException exception) {
+						throw exception.getCause();
+					}
 				}
 			});
 		}
