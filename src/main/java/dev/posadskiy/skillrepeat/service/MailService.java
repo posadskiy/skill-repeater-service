@@ -56,4 +56,18 @@ public class MailService {
 			log.info("Error when sending reset password message", e);
 		}
 	}
+
+	public void sendWelcomeMessage(String to, String hash) {
+		MimeMessage mimeMessage = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
+		try {
+			helper.setTo(to);
+			helper.setSubject("Welcome! Confirm email for Skill Repeater");
+			helper.setText(mailTemplateEngine.generateWelcomeEmailHtml(hash), true);
+
+			mailSender.send(mimeMessage);
+		} catch (MessagingException e) {
+			log.info("Error when sending reset password message", e);
+		}
+	}
 }

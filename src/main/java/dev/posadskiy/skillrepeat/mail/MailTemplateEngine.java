@@ -34,4 +34,13 @@ public class MailTemplateEngine {
 
 		return this.templateEngine.process(templateFileName, new Context(Locale.ROOT, variables));
 	}
+
+	public String generateWelcomeEmailHtml(String hash) {
+		Map<String, Object> variables = new HashMap<>();
+		variables.put("hash", hash);
+
+		final String templateFileName = "welcome";
+
+		return this.templateEngine.process(templateFileName, new Context(Locale.ROOT, variables));
+	}
 }

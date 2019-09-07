@@ -22,5 +22,6 @@ public class DbUser implements Serializable {
 	private List<String> roles;
 	private Long registrationDate;
 	private Boolean isAgreeGetEmails;
+	private Boolean isConfirmedEmail;
 
 }

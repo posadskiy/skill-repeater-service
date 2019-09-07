@@ -1,14 +1,8 @@
 package dev.posadskiy.skillrepeat.rest;
 
 import dev.posadskiy.skillrepeat.controller.UserController;
-import dev.posadskiy.skillrepeat.db.MessageRepository;
-import dev.posadskiy.skillrepeat.db.ResetPasswordRepository;
-import dev.posadskiy.skillrepeat.db.SessionRepository;
-import dev.posadskiy.skillrepeat.db.UserRepository;
-import dev.posadskiy.skillrepeat.db.model.DbMessage;
-import dev.posadskiy.skillrepeat.db.model.DbResetPassword;
-import dev.posadskiy.skillrepeat.db.model.DbSession;
-import dev.posadskiy.skillrepeat.db.model.DbUser;
+import dev.posadskiy.skillrepeat.db.*;
+import dev.posadskiy.skillrepeat.db.model.*;
 import dev.posadskiy.skillrepeat.dto.Auth;
 import dev.posadskiy.skillrepeat.dto.Message;
 import dev.posadskiy.skillrepeat.dto.Skill;
@@ -42,6 +36,7 @@ public class UserEndpoint {
 
 	private final UserRepository userRepository;
 	private final SessionRepository sessionRepository;
+	private final ConfirmEmailRepository confirmEmailRepository;
 	private final ResetPasswordRepository resetPasswordRepository;
 	private final MessageRepository messageRepository;
 	private final UserMapper userMapper;
@@ -51,9 +46,10 @@ public class UserEndpoint {
 	private final MailService mailService;
 
 	@Autowired
-	public UserEndpoint(UserRepository userRepository, SessionRepository sessionRepository, ResetPasswordRepository resetPasswordRepository, MessageRepository messageRepository, UserMapper userMapper, AuthMapper authMapper, UserController controller, AuthValidator authValidator, MailService mailService) {
+	public UserEndpoint(UserRepository userRepository, SessionRepository sessionRepository, ConfirmEmailRepository confirmEmailRepository, ResetPasswordRepository resetPasswordRepository, MessageRepository messageRepository, UserMapper userMapper, AuthMapper authMapper, UserController controller, AuthValidator authValidator, MailService mailService) {
 		this.userRepository = userRepository;
 		this.sessionRepository = sessionRepository;
+		this.confirmEmailRepository = confirmEmailRepository;
 		this.resetPasswordRepository = resetPasswordRepository;
 		this.messageRepository = messageRepository;
 		this.userMapper = userMapper;
@@ -151,6 +147,15 @@ public class UserEndpoint {
 			userRepository.save(
 				dbUser));
 
+		String hash = RandomStringUtils.randomAlphabetic(10);
+		DbConfirmEmail dbConfirmEmail = new DbConfirmEmail();
+		dbConfirmEmail.setUserId(dbUser.getId());
+		dbConfirmEmail.setHash(hash);
+		dbConfirmEmail.setTime(System.currentTimeMillis());
+		confirmEmailRepository.save(dbConfirmEmail);
+
+		mailService.sendWelcomeMessage(auth.getEmail().toLowerCase(), hash);
+
 		DbSession session = sessionRepository.save(new DbSession(request.getSession().getId(), user.getId(), System.currentTimeMillis() + SESSION_LIFE_TIME_MS));
 		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
 		cookie.setPath("/");
@@ -175,6 +180,15 @@ public class UserEndpoint {
 			userRepository.save(
 				dbUser));
 
+		String hash = RandomStringUtils.randomAlphabetic(10);
+		DbConfirmEmail dbConfirmEmail = new DbConfirmEmail();
+		dbConfirmEmail.setUserId(dbUser.getId());
+		dbConfirmEmail.setHash(hash);
+		dbConfirmEmail.setTime(System.currentTimeMillis());
+		confirmEmailRepository.save(dbConfirmEmail);
+
+		mailService.sendWelcomeMessage(user.getEmail().toLowerCase(), hash);
+
 		DbSession session = sessionRepository.save(new DbSession(request.getSession().getId(), createdUser.getId(), System.currentTimeMillis() + SESSION_LIFE_TIME_MS));
 		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
 		cookie.setPath("/");
@@ -182,6 +196,27 @@ public class UserEndpoint {
 		cookie.setMaxAge(SESSION_LIFE_TIME_S);
 		response.addCookie(cookie);
 		return createdUser;
+	}
+
+	@GetMapping("/confirmEmail/{hash}")
+	public String confirmEmail(@PathVariable(value = "hash") final String hash) {
+		DbConfirmEmail dbConfirmEmail = confirmEmailRepository.findByHash(hash);
+		if (dbConfirmEmail == null) {
+			throw new UserDoesNotExistException();
+		}
+
+		Optional<DbUser> foundUserById = userRepository.findById(dbConfirmEmail.getUserId());
+		if (!foundUserById.isPresent()) {
+			throw new UserDoesNotExistException();
+		}
+
+		DbUser foundUser = foundUserById.get();
+		foundUser.setIsConfirmedEmail(true);
+
+		userRepository.save(foundUser);
+		confirmEmailRepository.delete(dbConfirmEmail);
+
+		return "Confirmed!";
 	}
 
 	@PostMapping("/{userId}/changePassword")
