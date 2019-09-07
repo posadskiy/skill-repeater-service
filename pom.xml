@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>dev.posadskiy</groupId>
 	<artifactId>skill-repeat</artifactId>
-	<version>0.2.0</version>
+	<version>0.2.0-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>skill-repeat</name>
 	<description>Skill Repeater</description>
