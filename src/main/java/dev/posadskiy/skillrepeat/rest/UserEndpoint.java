@@ -1,301 +1,178 @@
 package dev.posadskiy.skillrepeat.rest;
 
-import dev.posadskiy.skillrepeat.controller.UserController;
-import dev.posadskiy.skillrepeat.db.*;
-import dev.posadskiy.skillrepeat.db.model.*;
-import dev.posadskiy.skillrepeat.dto.Auth;
+import dev.posadskiy.skillrepeat.controller.*;
+import dev.posadskiy.skillrepeat.db.model.DbConfirmEmail;
+import dev.posadskiy.skillrepeat.db.model.DbResetPassword;
+import dev.posadskiy.skillrepeat.db.model.DbSession;
+import dev.posadskiy.skillrepeat.db.model.DbUser;
 import dev.posadskiy.skillrepeat.dto.Message;
 import dev.posadskiy.skillrepeat.dto.Skill;
 import dev.posadskiy.skillrepeat.dto.User;
-import dev.posadskiy.skillrepeat.exception.UserAlreadyExistException;
-import dev.posadskiy.skillrepeat.exception.UserDoesNotExistException;
-import dev.posadskiy.skillrepeat.exception.UserPasswordDoesNotMatchException;
-import dev.posadskiy.skillrepeat.mapper.AuthMapper;
-import dev.posadskiy.skillrepeat.mapper.UserMapper;
-import dev.posadskiy.skillrepeat.service.CryptoService;
-import dev.posadskiy.skillrepeat.service.MailService;
-import dev.posadskiy.skillrepeat.validator.AuthValidator;
-import org.apache.commons.lang3.RandomStringUtils;
+import dev.posadskiy.skillrepeat.manager.CookieManager;
+import dev.posadskiy.skillrepeat.manager.MailManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
-import static dev.posadskiy.skillrepeat.controller.SessionControllerImpl.SESSION_LIFE_TIME_MS;
-import static dev.posadskiy.skillrepeat.controller.SessionControllerImpl.SESSION_LIFE_TIME_S;
+import static dev.posadskiy.skillrepeat.manager.CookieManager.SESSION_COOKIE_NAME;
 
 @RestController
 @RequestMapping("/user")
 public class UserEndpoint {
-	private static final String SESSION_COOKIE_NAME = "SESSION_ID";
-
-	private final UserRepository userRepository;
-	private final SessionRepository sessionRepository;
-	private final ConfirmEmailRepository confirmEmailRepository;
-	private final ResetPasswordRepository resetPasswordRepository;
-	private final MessageRepository messageRepository;
-	private final UserMapper userMapper;
-	private final AuthMapper authMapper;
-	private final UserController controller;
-	private final AuthValidator authValidator;
-	private final MailService mailService;
+	private final UserController userController;
+	private final SessionController sessionController;
+	private final ConfirmEmailController confirmEmailController;
+	private final ResetPasswordController resetPasswordController;
+	private final MessageController messageController;
+	private final MailManager mailManager;
+	private final CookieManager cookieManager;
 
 	@Autowired
-	public UserEndpoint(UserRepository userRepository, SessionRepository sessionRepository, ConfirmEmailRepository confirmEmailRepository, ResetPasswordRepository resetPasswordRepository, MessageRepository messageRepository, UserMapper userMapper, AuthMapper authMapper, UserController controller, AuthValidator authValidator, MailService mailService) {
-		this.userRepository = userRepository;
-		this.sessionRepository = sessionRepository;
-		this.confirmEmailRepository = confirmEmailRepository;
-		this.resetPasswordRepository = resetPasswordRepository;
-		this.messageRepository = messageRepository;
-		this.userMapper = userMapper;
-		this.authMapper = authMapper;
-		this.controller = controller;
-		this.authValidator = authValidator;
-		this.mailService = mailService;
-	}
-
-	@RequestMapping("/all")
-	public List<User> getAll(@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.getAll(new RequestWrapper().sessionId(sessionId));
+	public UserEndpoint(UserController userController, SessionController sessionController, ConfirmEmailController confirmEmailController, ResetPasswordController resetPasswordController, MessageController messageController, MailManager mailManager, CookieManager cookieManager) {
+		this.userController = userController;
+		this.sessionController = sessionController;
+		this.confirmEmailController = confirmEmailController;
+		this.resetPasswordController = resetPasswordController;
+		this.messageController = messageController;
+		this.mailManager = mailManager;
+		this.cookieManager = cookieManager;
 	}
 
 	@GetMapping("/id/{id}")
-	public User getUserById(@PathVariable("id") final String id, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.getUserById(new RequestWrapper().userId(id).sessionId(sessionId));
-	}
-
-	@GetMapping("/name/{name}")
-	public User getUserByName(@PathVariable("name") final String name, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.findByName(new RequestWrapper().data(name).sessionId(sessionId));
+	public User getUserById(@PathVariable("id") final String id,
+							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		return userController.getUserById(new RequestWrapper().userId(id).sessionId(sessionId));
 	}
 
 	@PostMapping("/")
-	public User updateUser(@RequestBody final User user, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.updateUser(new RequestWrapper().data(user).userId(user.getId()).sessionId(sessionId));
+	public User updateUser(@RequestBody final User user,
+						   @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		return userController.updateUser(new RequestWrapper().data(user).userId(user.getId()).sessionId(sessionId));
 	}
 
 	@PostMapping("/{userId}/skill/add")
-	public User addSkill(@PathVariable("userId") final String userId, @RequestBody final List<Skill> skills,
+	public User addSkill(@PathVariable("userId") final String userId,
+						 @RequestBody final List<Skill> skills,
 						 @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.addSkill(new RequestWrapper().data(skills).userId(userId).sessionId(sessionId));
+		return userController.addSkill(new RequestWrapper().data(skills).userId(userId).sessionId(sessionId));
 	}
 
 	@PostMapping("/{userId}/skill/edit")
-	public User editSkill(@PathVariable("userId") final String userId, @RequestBody final Skill skill,
-						 @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.editSkill(new RequestWrapper().data(skill).userId(userId).sessionId(sessionId));
+	public User editSkill(@PathVariable("userId") final String userId,
+						  @RequestBody final Skill skill,
+						  @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		return userController.editSkill(new RequestWrapper().data(skill).userId(userId).sessionId(sessionId));
 	}
 
 	@DeleteMapping("/{userId}/skill/{skillId}")
-	public User deleteSkill(@PathVariable("userId") final String userId, @PathVariable final String skillId,
+	public User deleteSkill(@PathVariable("userId") final String userId,
+							@PathVariable final String skillId,
 							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.deleteSkill(new RequestWrapper().data(skillId).userId(userId).sessionId(sessionId));
+		return userController.deleteSkill(new RequestWrapper().data(skillId).userId(userId).sessionId(sessionId));
 	}
 
 	@DeleteMapping("/{id}")
-	public void deleteUser(@PathVariable(value = "id") final String userId, @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		controller.deleteUser(new RequestWrapper().userId(userId).sessionId(sessionId));
+	public void deleteUser(@PathVariable(value = "id") final String userId,
+						   @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		userController.deleteUser(new RequestWrapper().userId(userId).sessionId(sessionId));
 	}
 
 	@GetMapping("/{userId}/skill/repeat/{skillId}")
 	public User repeatSkill(@PathVariable(value = "userId") final String userId,
 							@PathVariable(value = "skillId") final String skillId,
 							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.repeatSkill(new RequestWrapper().data(skillId).userId(userId).sessionId(sessionId));
+		return userController.repeatSkill(new RequestWrapper().data(skillId).userId(userId).sessionId(sessionId));
 	}
 
 	@PostMapping("/auth")
-	public User auth(@RequestBody final Auth auth, final HttpServletRequest request, final HttpServletResponse response) {
-		authValidator.authValidate(auth);
+	public User auth(@RequestBody final User user,
+					 final HttpServletRequest request,
+					 final HttpServletResponse response) {
+		User foundUser = userController.auth(user);
+		DbSession dbSession = sessionController.create(request.getSession().getId(), foundUser.getId());
+		response.addCookie(cookieManager.createCookie(dbSession.getId()));
 
-		DbUser foundUser = userRepository.findByEmail(auth.getEmail().toLowerCase());
-		if (foundUser == null) {
-			throw new UserDoesNotExistException();
-		}
-
-		if (!auth.getPassword().equals(foundUser.getPassword())) {
-			throw new UserPasswordDoesNotMatchException();
-		}
-
-		User user = userMapper.mapToDto(foundUser);
-		DbSession session = sessionRepository.save(new DbSession(request.getSession().getId(), user.getId(), System.currentTimeMillis() + SESSION_LIFE_TIME_MS));
-		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
-		cookie.setPath("/");
-		cookie.setDomain("localhost");
-		cookie.setMaxAge(SESSION_LIFE_TIME_S);
-		response.addCookie(cookie);
-		return user;
+		return foundUser;
 	}
 
 	@PostMapping("/reg")
-	public User registration(@RequestBody final User user, final HttpServletRequest request, final HttpServletResponse response) {
-		//authValidator.regValidate(user);
+	public User registration(@RequestBody final User user,
+							 final HttpServletRequest request,
+							 final HttpServletResponse response) {
 
-		DbUser foundUser = userRepository.findByEmail(user.getEmail().toLowerCase());
-		if (foundUser != null) {
-			throw new UserAlreadyExistException();
-		}
+		User createdUser = userController.create(user);
+		DbConfirmEmail conformEmail = confirmEmailController.create(createdUser.getId());
+		mailManager.sendWelcomeMessage(createdUser.getEmail().toLowerCase(), conformEmail.getHash());
 
-		DbUser dbUser = userMapper.mapFromDto(user);
-		dbUser.setRoles(Collections.singletonList("USER"));
-		dbUser.setRegistrationDate(new Date());
-		User savedUser = userMapper.mapToDto(
-			userRepository.save(
-				dbUser));
+		DbSession createdSession = sessionController.create(request.getSession().getId(), createdUser.getId());
+		response.addCookie(cookieManager.createCookie(createdSession.getId()));
 
-		String hash = RandomStringUtils.randomAlphabetic(10);
-		DbConfirmEmail dbConfirmEmail = new DbConfirmEmail();
-		dbConfirmEmail.setUserId(savedUser.getId());
-		dbConfirmEmail.setHash(hash);
-		dbConfirmEmail.setTime(System.currentTimeMillis());
-		confirmEmailRepository.save(dbConfirmEmail);
-
-		mailService.sendWelcomeMessage(user.getEmail().toLowerCase(), hash);
-
-		DbSession session = sessionRepository.save(new DbSession(request.getSession().getId(), savedUser.getId(), System.currentTimeMillis() + SESSION_LIFE_TIME_MS));
-		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
-		cookie.setPath("/");
-		cookie.setDomain("localhost");
-		cookie.setMaxAge(SESSION_LIFE_TIME_S);
-		response.addCookie(cookie);
-		return savedUser;
-	}
-
-	@PostMapping("/regWithSkills")
-	public User registrationWithSkills(@RequestBody final User user, final HttpServletRequest request, final HttpServletResponse response) {
-		//authValidator.regValidate(auth);
-
-		DbUser foundUser = userRepository.findByEmail(user.getEmail().toLowerCase());
-		if (foundUser != null) {
-			throw new UserAlreadyExistException();
-		}
-
-		DbUser dbUser = userMapper.mapFromDto(user);
-		dbUser.setRoles(Collections.singletonList("USER"));
-		dbUser.setRegistrationDate(new Date());
-		User createdUser = userMapper.mapToDto(
-			userRepository.save(
-				dbUser));
-
-		String hash = RandomStringUtils.randomAlphabetic(10);
-		DbConfirmEmail dbConfirmEmail = new DbConfirmEmail();
-		dbConfirmEmail.setUserId(createdUser.getId());
-		dbConfirmEmail.setHash(hash);
-		dbConfirmEmail.setTime(System.currentTimeMillis());
-		confirmEmailRepository.save(dbConfirmEmail);
-
-		mailService.sendWelcomeMessage(user.getEmail().toLowerCase(), hash);
-
-		DbSession session = sessionRepository.save(new DbSession(request.getSession().getId(), createdUser.getId(), System.currentTimeMillis() + SESSION_LIFE_TIME_MS));
-		Cookie cookie = new Cookie(SESSION_COOKIE_NAME, session.getId());
-		cookie.setPath("/");
-		cookie.setDomain("localhost");
-		cookie.setMaxAge(SESSION_LIFE_TIME_S);
-		response.addCookie(cookie);
 		return createdUser;
 	}
 
 	@GetMapping("/confirmEmail/{hash}")
-	public String confirmEmail(@PathVariable(value = "hash") final String hash) {
-		DbConfirmEmail dbConfirmEmail = confirmEmailRepository.findByHash(hash);
-		if (dbConfirmEmail == null) {
-			throw new UserDoesNotExistException();
-		}
+	public User confirmEmail(@PathVariable(value = "hash") final String hash) {
+		DbConfirmEmail foundConfirmEmail = confirmEmailController.getByHash(hash);
 
-		Optional<DbUser> foundUserById = userRepository.findById(dbConfirmEmail.getUserId());
-		if (!foundUserById.isPresent()) {
-			throw new UserDoesNotExistException();
-		}
+		User user = userController.confirmEmail(foundConfirmEmail.getUserId());
+		confirmEmailController.delete(foundConfirmEmail);
 
-		DbUser foundUser = foundUserById.get();
-		foundUser.setIsConfirmedEmail(true);
-
-		userRepository.save(foundUser);
-		confirmEmailRepository.delete(dbConfirmEmail);
-
-		return "Confirmed!";
+		return user;
 	}
 
-	@PostMapping("/{userId}/changePassword")
-	public void changePassword(@PathVariable(value = "userId") final String userId,
-							   @RequestBody final Auth auth,
-							   @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		controller.changePassword(new RequestWrapper().data(auth).userId(userId).sessionId(sessionId));
+	@PostMapping("/{userId}/checkPasswordMatch")
+	public DbResetPassword checkPasswordMatch(@PathVariable(value = "userId") final String userId,
+								   @RequestBody final User user,
+								   @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		userController.isPasswordMatch(new RequestWrapper().data(user).userId(userId).sessionId(sessionId));
+
+		return resetPasswordController.create(user.getId());
+	}
+
+	@PostMapping("/changePassword/{hash}")
+	public User changePassword(@PathVariable(value = "hash") final String hash,
+							   @RequestBody final User user) {
+		DbResetPassword foundResetPassword = resetPasswordController.getByHash(hash);
+
+		return userController.changePassword(foundResetPassword.getUserId(), user);
 	}
 
 	@PostMapping("/{userId}/changeEmail")
 	public User changeEmail(@PathVariable(value = "userId") final String userId,
-							   @RequestBody final Auth auth,
-							   @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.changeEmail(new RequestWrapper().data(auth).userId(userId).sessionId(sessionId));
+							@RequestBody final User user,
+							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		return userController.changeEmail(new RequestWrapper().data(user).userId(userId).sessionId(sessionId));
 	}
 
 	@PostMapping("/{userId}/changeNotification")
 	public User changeNotification(@PathVariable(value = "userId") final String userId,
-							   @RequestBody final User user,
-							   @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		return controller.changeNotification(new RequestWrapper().data(user).userId(userId).sessionId(sessionId));
+								   @RequestBody final User user,
+								   @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+		return userController.changeNotification(new RequestWrapper().data(user).userId(userId).sessionId(sessionId));
 	}
 
 	@PostMapping("/forgotPass")
-	public void forgotPassword(@RequestBody final Auth auth) {
-		DbUser foundUser = userRepository.findByEmail(auth.getEmail().toLowerCase());
-		if (foundUser == null) {
-			throw new UserDoesNotExistException();
-		}
+	public void forgotPassword(@RequestBody final User user) {
+		User foundUser = userController.findByEmail(user.getEmail().toLowerCase());
 
-		String hash = RandomStringUtils.randomAlphabetic(10);
-		DbResetPassword dbResetPassword = new DbResetPassword();
-		dbResetPassword.setUserId(foundUser.getId());
-		dbResetPassword.setHash(hash);
-		dbResetPassword.setTime(System.currentTimeMillis());
-		resetPasswordRepository.save(dbResetPassword);
+		DbResetPassword createdResetPassword = resetPasswordController.create(foundUser.getId());
 
-		mailService.sendResetPasswordMessage(foundUser.getEmail(), hash);
-	}
-
-	@GetMapping("/resetPass/{hash}")
-	public void resetPassword(@PathVariable(value = "hash") final String hash) {
-		DbResetPassword foundResetPassword = resetPasswordRepository.findByHash(hash);
-		if (foundResetPassword == null) {
-			throw new UserDoesNotExistException();
-		}
-
-		Optional<DbUser> foundUserById = userRepository.findById(foundResetPassword.getUserId());
-		if (!foundUserById.isPresent()) {
-			throw new UserDoesNotExistException();
-		}
-
-		DbUser foundUser = foundUserById.get();
-		String newNakedPassword = RandomStringUtils.randomAscii(10);
-		String newPassword = CryptoService.createNewPassword(newNakedPassword);
-		foundUser.setPassword(newPassword);
-
-		userRepository.save(foundUser);
-		resetPasswordRepository.delete(foundResetPassword);
-
-		mailService.sendMessage(foundUser.getEmail(), "Your new password for Skill Repeater", "Hello!\n" +
-			"Your new password is " + newNakedPassword);
+		mailManager.sendForgotPasswordMessage(foundUser.getEmail(), createdResetPassword.getHash());
 	}
 
 	@PostMapping("/{userId}/changeRoles")
-	public void changeRoles(@PathVariable("userId") final String userId, @RequestBody final List<String> roles,
+	public void changeRoles(@PathVariable("userId") final String userId,
+							@RequestBody final List<String> roles,
 							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		controller.changeRoles(new RequestWrapper().data(roles).userId(userId).sessionId(sessionId));
+		userController.changeRoles(new RequestWrapper().data(roles).userId(userId).sessionId(sessionId));
 	}
 
 	@PostMapping("/{userId}/sendMessage")
-	public void sendMessage(@PathVariable("userId") final String userId, @RequestBody final Message message,
-							@CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
-		DbMessage dbMessage = new DbMessage();
-		dbMessage.setUserId(userId);
-		dbMessage.setMessage(message.getMessage());
-		messageRepository.save(dbMessage);
+	public void sendMessage(@PathVariable("userId") final String userId,
+							@RequestBody final Message message) {
+		messageController.create(message, userId);
 	}
 }

@@ -31,9 +31,9 @@ public class SecurityAnnotationBeanPostProcessorTest {
 	private static final String ADMIN_ROLE = "ADMIN";
 	private static final String BAD_ROLE = "BAD_ROLE";
 
-	private SecurityAnnotationBeanPostProcessor postProcessor = new SecurityAnnotationBeanPostProcessor();
-	private SessionController sessionController = mock(SessionController.class);
-	private UserRepository userRepository = mock(UserRepository.class);
+	private final SecurityAnnotationBeanPostProcessor postProcessor = new SecurityAnnotationBeanPostProcessor();
+	private final SessionController sessionController = mock(SessionController.class);
+	private final UserRepository userRepository = mock(UserRepository.class);
 
 	@Before
 	public void beforeTests() throws IllegalAccessException {

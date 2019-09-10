@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import static dev.posadskiy.skillrepeat.controller.SessionControllerImpl.SESSION_LIFE_TIME_MS;
+import static dev.posadskiy.skillrepeat.controller.impl.SessionControllerImpl.SESSION_LIFE_TIME_MS;
 
 @Slf4j
 public class OldSessionGarbageCollectorWorker {

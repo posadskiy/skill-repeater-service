@@ -1,5 +1,6 @@
-package dev.posadskiy.skillrepeat.controller;
+package dev.posadskiy.skillrepeat.controller.impl;
 
+import dev.posadskiy.skillrepeat.controller.SessionController;
 import dev.posadskiy.skillrepeat.db.SessionRepository;
 import dev.posadskiy.skillrepeat.db.model.DbSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,5 +29,9 @@ public class SessionControllerImpl implements SessionController {
 	public boolean isSessionExpired(String sessionId) {
 		DbSession sessionById = getSessionById(sessionId);
 		return sessionById.getTime() < System.currentTimeMillis();
+	}
+
+	public DbSession create(String sessionId, String userId) {
+		return repository.save(new DbSession(sessionId, userId, System.currentTimeMillis() + SESSION_LIFE_TIME_MS));
 	}
 }

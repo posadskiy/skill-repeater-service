@@ -84,6 +84,20 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(restException, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
+	@ExceptionHandler(ConfirmEmailDoesNotExistException.class)
+	public ResponseEntity<?> confirmEmailDoesNotExistExceptionHandler(ConfirmEmailDoesNotExistException exception) {
+		log.debug("ConfirmEmailDoesNotExistException", exception);
+		RestException restException = new RestException("Request error", 11, "There are problems with your invite. Please, request new link for confirm email");
+		return new ResponseEntity<>(restException, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@ExceptionHandler(ResetPasswordDoesNotExistException.class)
+	public ResponseEntity<?> resetPasswordDoesNotExistExceptionHandler(ResetPasswordDoesNotExistException exception) {
+		log.debug("UserDoesNotExistException", exception);
+		RestException restException = new RestException("Request error", 12, "There are problems with your request. Please, request new link for change password");
+		return new ResponseEntity<>(restException, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> globalExceptionHandler(Exception exception) {
 		log.error("Undefined exception", exception);

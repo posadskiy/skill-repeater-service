@@ -25,7 +25,7 @@ public class SecurityAnnotationBeanPostProcessor implements BeanPostProcessor {
 	@Autowired
 	private UserRepository userRepository;
 
-	private Map<String, Class> beans = new HashMap<>();
+	private final Map<String, Class> beans = new HashMap<>();
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {

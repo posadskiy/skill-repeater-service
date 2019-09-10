@@ -1,15 +1,13 @@
 package dev.posadskiy.skillrepeat;
 
 import dev.posadskiy.skillrepeat.annotation.bpp.SecurityAnnotationBeanPostProcessor;
-import dev.posadskiy.skillrepeat.controller.SessionController;
-import dev.posadskiy.skillrepeat.controller.SessionControllerImpl;
-import dev.posadskiy.skillrepeat.controller.UserController;
-import dev.posadskiy.skillrepeat.controller.UserControllerImpl;
-import dev.posadskiy.skillrepeat.mapper.AuthMapper;
-import dev.posadskiy.skillrepeat.mapper.AuthMapperImpl;
+import dev.posadskiy.skillrepeat.controller.*;
+import dev.posadskiy.skillrepeat.controller.impl.*;
+import dev.posadskiy.skillrepeat.manager.CookieManager;
+import dev.posadskiy.skillrepeat.mapper.SkillMapperImpl;
+import dev.posadskiy.skillrepeat.mapper.SkillMapper;
 import dev.posadskiy.skillrepeat.mapper.UserMapper;
 import dev.posadskiy.skillrepeat.mapper.UserMapperImpl;
-import dev.posadskiy.skillrepeat.validator.AuthValidator;
 import dev.posadskiy.skillrepeat.validator.UserValidator;
 import dev.posadskiy.skillrepeat.worker.EmailNotificationWorker;
 import dev.posadskiy.skillrepeat.worker.OldSessionGarbageCollectorWorker;
@@ -37,18 +35,28 @@ public class SpringConfiguration {
 	}
 
 	@Bean
+	public ConfirmEmailController confirmEmailController() {
+		return new ConfirmEmailControllerImpl();
+	}
+
+	@Bean
+	public ResetPasswordController resetPasswordController() {
+		return new ResetPasswordControllerImpl();
+	}
+
+	@Bean
+	public MessageController messageController() {
+		return new MessageControllerImpl();
+	}
+
+	@Bean
 	public UserMapper userMapper() {
 		return new UserMapperImpl();
 	}
 
 	@Bean
-	public AuthMapper authMapper() {
-		return new AuthMapperImpl();
-	}
-
-	@Bean
-	public AuthValidator authValidator() {
-		return new AuthValidator();
+	public SkillMapper skillMapper() {
+		return new SkillMapperImpl();
 	}
 
 	@Bean

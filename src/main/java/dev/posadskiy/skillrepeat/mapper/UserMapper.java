@@ -4,92 +4,55 @@ import dev.posadskiy.skillrepeat.db.model.DbSkill;
 import dev.posadskiy.skillrepeat.db.model.DbUser;
 import dev.posadskiy.skillrepeat.dto.Skill;
 import dev.posadskiy.skillrepeat.dto.User;
-import org.mapstruct.*;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.UUID;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
+import org.mapstruct.Named;
+import org.mapstruct.factory.Mappers;
 
 @Mapper
 public interface UserMapper {
-    @Mappings({
-        @Mapping(source = "id", target = "id"),
-        @Mapping(source = "name", target = "name"),
-        @Mapping(target = "password", ignore = true),
-        @Mapping(source = "skills", target = "skills")
-    })
-    User mapToDto(DbUser dbUser);
 
-    @Mappings({
-        @Mapping(source = "id", target = "id"),
-        @Mapping(source = "name", target = "name"),
-        @Mapping(source = "level", target = "level"),
-        @Mapping(source = "lastRepeat", target = "lastRepeat")
-    })
-    Skill map(DbSkill skill);
+	SkillMapper skillMapper = Mappers.getMapper(SkillMapper.class);
 
-    @AfterMapping
-    default void map(DbSkill dbSkill, @MappingTarget Skill skill) {
-        skill.setIsNeedRepeat(mapLastRepeatDateToIsNeedRepeatBoolean(dbSkill.getLastRepeat()));
-    }
+	@Mappings({
+		@Mapping(source = "id", target = "id"),
+		@Mapping(source = "name", target = "name"),
+		@Mapping(source = "email", target = "email"),
+		@Mapping(source = "period", target = "period"),
+		@Mapping(source = "time", target = "time"),
+		@Mapping(source = "skills", target = "skills"),
+		@Mapping(source = "isAgreeGetEmails", target = "isAgreeGetEmails"),
+		@Mapping(target = "password", ignore = true),
+	})
+	User mapToDto(DbUser dbUser);
 
-    @Mappings({
-        @Mapping(source = "id", target = "id"),
-        @Mapping(source = "name", target = "name"),
-        @Mapping(source = "email", target = "email"),
-        @Mapping(source = "skills", target = "skills")
-    })
-    DbUser mapFromDto(User user);
+	default Skill map(DbSkill skill) {
+		return skillMapper.map(skill);
+	}
 
-    @Mappings({
-        @Mapping(source = "id", target = "id"),
-        @Mapping(source = "name", target = "name"),
-        @Mapping(source = "lastRepeat", target = "lastRepeat"),
-        @Mapping(target = "level", ignore = true),
-    })
-    DbSkill map(Skill skill);
+	@Mappings({
+		@Mapping(source = "id", target = "id"),
+		@Mapping(source = "name", target = "name"),
+		@Mapping(source = "email", target = "email", qualifiedByName = "emailQualifier"),
+		@Mapping(source = "password", target = "password"),
+		@Mapping(source = "skills", target = "skills"),
+		@Mapping(source = "period", target = "period"),
+		@Mapping(source = "time", target = "time"),
+		@Mapping(source = "isAgreeGetEmails", target = "isAgreeGetEmails"),
+		@Mapping(target = "isConfirmedEmail", ignore = true),
+		@Mapping(target = "roles", ignore = true),
+		@Mapping(target = "registrationDate", ignore = true)
+	})
+	DbUser mapFromDto(User user);
 
-    @AfterMapping
-    default void map(Skill skill, @MappingTarget DbSkill dbSkill) {
-        dbSkill.setId(skill.getId() != null ? skill.getId() : UUID.randomUUID().toString());
-        dbSkill.setLevel(skill.getLevel() != null ? skill.getLevel() : 1);
-        dbSkill.setLastRepeat(mapTermRepeatStringToLastRepeatDate(skill.getTermRepeat()));
-    }
+	default DbSkill map(Skill skill) {
+		return skillMapper.map(skill);
+	}
 
-    default Boolean mapLastRepeatDateToIsNeedRepeatBoolean(Date date) {
-        if (date == null) return false;
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DATE, -14);
-        return date.before(calendar.getTime());
-    }
-
-    default Date mapTermRepeatStringToLastRepeatDate(String term) {
-
-        if (term == null) return subDateToCalendar(365);
-
-        switch (term) {
-            case "0":
-                return subDateToCalendar(0);
-            case "1":
-                return subDateToCalendar(1);
-            case "2":
-                return subDateToCalendar(7);
-            case "3":
-                return subDateToCalendar(14);
-            case "4":
-                return subDateToCalendar(30);
-            default:
-                break;
-        }
-
-        return subDateToCalendar(365);
-    }
-
-    default Date subDateToCalendar(int days) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DATE, -days);
-        return calendar.getTime();
-    }
+	@Named("emailQualifier")
+	default String emailQualifier(String email) {
+		return email.toLowerCase();
+	}
 
 }
