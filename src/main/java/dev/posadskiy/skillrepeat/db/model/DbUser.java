@@ -24,5 +24,7 @@ public class DbUser implements Serializable {
 	private Date registrationDate;
 	private Boolean isAgreeGetEmails;
 	private Boolean isConfirmedEmail;
+	private Boolean isAgreeGetTelegram;
+	private Long telegramChatId;
 
 }

@@ -75,7 +75,8 @@ public class UserControllerImpl implements UserController {
 
 		DbUser dbUser = this.getUserById(userId);
 
-		if (dbUser.getSkills().size() + skills.size() > MAX_SKILLS_NUMBER) {
+		int dbUserSkillSize = CollectionUtils.isEmpty(dbUser.getSkills()) ? 0 : dbUser.getSkills().size();
+		if (dbUserSkillSize + skills.size() > MAX_SKILLS_NUMBER) {
 			throw new TooMuchSkillsForUserException();
 		}
 
@@ -198,6 +199,21 @@ public class UserControllerImpl implements UserController {
 			userRepository.save(
 				foundUser
 			));
+	}
+
+	@Override
+	public User appendChatIdToUser(String userId, Long chatId) {
+		DbUser dbUser = this.getUserById(userId);
+		if (chatId != 0 && !chatId.equals(dbUser.getTelegramChatId())) {
+			dbUser.setTelegramChatId(chatId);
+			dbUser.setIsAgreeGetTelegram(true);
+		}
+
+		return userMapper.mapToDto(
+			userRepository.save(
+				dbUser
+			)
+		);
 	}
 
 	@Override

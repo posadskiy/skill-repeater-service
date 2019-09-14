@@ -5,6 +5,7 @@ import dev.posadskiy.skillrepeat.db.UserRepository;
 import dev.posadskiy.skillrepeat.db.model.DbSkill;
 import dev.posadskiy.skillrepeat.db.model.DbUser;
 import dev.posadskiy.skillrepeat.service.MailService;
+import dev.posadskiy.skillrepeat.service.TelegramService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,25 +24,35 @@ import java.util.stream.Collectors;
 import static dev.posadskiy.skillrepeat.SystemSetting.DAYS_BETWEEN_NOTIFICATIONS;
 
 @Slf4j
-public class EmailNotificationWorker {
+public class UserNotificationWorker {
 	@Autowired
 	private UserRepository userRepository;
 
 	@Autowired
 	private MailService mailService;
 
+	@Autowired
+	private TelegramService telegramService;
+
 	@Scheduled(initialDelay = 6000000, fixedDelay = 900000)
-	public void sendEmailNotification() {
-		log.info("Email notification worker started");
+	public void sendUserNotification() {
+		log.info("User notification worker started");
 		List<DbUser> users = userRepository.findAll();
 		users.forEach((user) -> {
-			if (user.getIsConfirmedEmail() == null
-				|| !user.getIsConfirmedEmail()
-				|| user.getIsAgreeGetEmails() == null
-				|| !user.getIsAgreeGetEmails()
-				|| StringUtils.isEmpty(user.getEmail())
-				|| !user.getEmail().contains("@")
-				|| CollectionUtils.isEmpty(user.getSkills())) return;
+			boolean isEmailAvailable = user.getIsConfirmedEmail() != null
+				&& user.getIsConfirmedEmail()
+				&& user.getIsAgreeGetEmails() != null
+				&& user.getIsAgreeGetEmails()
+				&& StringUtils.isNotEmpty(user.getEmail())
+				&& user.getEmail().contains("@");
+
+			boolean isTelegramAvailable = user.getIsAgreeGetTelegram() != null
+				&& user.getIsAgreeGetTelegram()
+				&& user.getTelegramChatId() != 0;
+
+			boolean isSkillsExist = CollectionUtils.isNotEmpty(user.getSkills());
+
+			if (!isEmailAvailable && !isTelegramAvailable || !isSkillsExist) return;
 
 			List<DbSkill> skills = user.getSkills().stream().filter((skill) -> {
 				int notificationPeriod = Math.min(skill.getPeriod(), DAYS_BETWEEN_NOTIFICATIONS);
@@ -83,7 +94,13 @@ public class EmailNotificationWorker {
 			List<String> skillNames = skills.stream().map(DbSkill::getName).collect(Collectors.toList());
 			String joinedSkills = StringUtils.join(skillNames, ", ");
 
-			mailService.sendRepeatMessage(user.getEmail(), "Time to train skills", joinedSkills, LocalDate.now().format(DateTimeFormatter.ofPattern("d MMM")), skills.get(0).getTime());
+			if (isEmailAvailable) {
+				mailService.sendRepeatMessage(user.getEmail(), "Time to train skills", joinedSkills, LocalDate.now().format(DateTimeFormatter.ofPattern("d MMM")), skills.get(0).getTime());
+			}
+
+			if (isTelegramAvailable) {
+				telegramService.sendMessage(user.getTelegramChatId(), joinedSkills);
+			}
 
 			List<DbSkill> updatedSkills = user.getSkills().stream().peek(skill -> {
 				if (skills.contains(skill)) {
@@ -94,6 +111,6 @@ public class EmailNotificationWorker {
 			user.setSkills(updatedSkills);
 			userRepository.save(user);
 		});
-		log.info("Email notification worker finished");
+		log.info("User notification worker finished");
 	}
 }

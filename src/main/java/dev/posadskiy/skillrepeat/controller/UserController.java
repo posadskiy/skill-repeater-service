@@ -39,4 +39,6 @@ public interface UserController {
 
 	User changePassword(String userId, User user);
 
+	User appendChatIdToUser(String userId, Long chatId);
+
 }

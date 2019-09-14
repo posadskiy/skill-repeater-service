@@ -4,12 +4,13 @@ import dev.posadskiy.skillrepeat.controller.*;
 import dev.posadskiy.skillrepeat.db.model.DbConfirmEmail;
 import dev.posadskiy.skillrepeat.db.model.DbResetPassword;
 import dev.posadskiy.skillrepeat.db.model.DbSession;
-import dev.posadskiy.skillrepeat.db.model.DbUser;
+import dev.posadskiy.skillrepeat.db.model.DbTelegramAuthCode;
 import dev.posadskiy.skillrepeat.dto.Message;
 import dev.posadskiy.skillrepeat.dto.Skill;
 import dev.posadskiy.skillrepeat.dto.User;
 import dev.posadskiy.skillrepeat.manager.CookieManager;
 import dev.posadskiy.skillrepeat.manager.MailManager;
+import dev.posadskiy.skillrepeat.manager.TelegramManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,9 +30,10 @@ public class UserEndpoint {
 	private final MessageController messageController;
 	private final MailManager mailManager;
 	private final CookieManager cookieManager;
+	private final TelegramManager telegramManager;
 
 	@Autowired
-	public UserEndpoint(UserController userController, SessionController sessionController, ConfirmEmailController confirmEmailController, ResetPasswordController resetPasswordController, MessageController messageController, MailManager mailManager, CookieManager cookieManager) {
+	public UserEndpoint(UserController userController, SessionController sessionController, ConfirmEmailController confirmEmailController, ResetPasswordController resetPasswordController, MessageController messageController, MailManager mailManager, CookieManager cookieManager, TelegramManager telegramManager) {
 		this.userController = userController;
 		this.sessionController = sessionController;
 		this.confirmEmailController = confirmEmailController;
@@ -39,6 +41,7 @@ public class UserEndpoint {
 		this.messageController = messageController;
 		this.mailManager = mailManager;
 		this.cookieManager = cookieManager;
+		this.telegramManager = telegramManager;
 	}
 
 	@GetMapping("/id/{id}")
@@ -125,8 +128,8 @@ public class UserEndpoint {
 
 	@PostMapping("/{userId}/checkPasswordMatch")
 	public DbResetPassword checkPasswordMatch(@PathVariable(value = "userId") final String userId,
-								   @RequestBody final User user,
-								   @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
+											  @RequestBody final User user,
+											  @CookieValue(SESSION_COOKIE_NAME) final String sessionId) {
 		userController.isPasswordMatch(new RequestWrapper().data(user).userId(userId).sessionId(sessionId));
 
 		return resetPasswordController.create(user.getId());
@@ -137,7 +140,11 @@ public class UserEndpoint {
 							   @RequestBody final User user) {
 		DbResetPassword foundResetPassword = resetPasswordController.getByHash(hash);
 
-		return userController.changePassword(foundResetPassword.getUserId(), user);
+		User changedUser = userController.changePassword(foundResetPassword.getUserId(), user);
+
+		resetPasswordController.delete(foundResetPassword);
+
+		return changedUser;
 	}
 
 	@PostMapping("/{userId}/changeEmail")
@@ -174,5 +181,10 @@ public class UserEndpoint {
 	public void sendMessage(@PathVariable("userId") final String userId,
 							@RequestBody final Message message) {
 		messageController.create(message, userId);
+	}
+
+	@GetMapping("/{userId}/getTelegramLink")
+	public DbTelegramAuthCode getTelegramLink(@PathVariable("userId") final String userId) {
+		return telegramManager.createTelegramLink(userId);
 	}
 }

@@ -3,13 +3,14 @@ package dev.posadskiy.skillrepeat;
 import dev.posadskiy.skillrepeat.annotation.bpp.SecurityAnnotationBeanPostProcessor;
 import dev.posadskiy.skillrepeat.controller.*;
 import dev.posadskiy.skillrepeat.controller.impl.*;
-import dev.posadskiy.skillrepeat.manager.CookieManager;
+import dev.posadskiy.skillrepeat.manager.TelegramManager;
 import dev.posadskiy.skillrepeat.mapper.SkillMapperImpl;
 import dev.posadskiy.skillrepeat.mapper.SkillMapper;
 import dev.posadskiy.skillrepeat.mapper.UserMapper;
 import dev.posadskiy.skillrepeat.mapper.UserMapperImpl;
+import dev.posadskiy.skillrepeat.telegram.TelegramBot;
 import dev.posadskiy.skillrepeat.validator.UserValidator;
-import dev.posadskiy.skillrepeat.worker.EmailNotificationWorker;
+import dev.posadskiy.skillrepeat.worker.UserNotificationWorker;
 import dev.posadskiy.skillrepeat.worker.OldSessionGarbageCollectorWorker;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.telegram.telegrambots.ApiContextInitializer;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
@@ -50,6 +54,29 @@ public class SpringConfiguration {
 	}
 
 	@Bean
+	public TelegramAuthCodeController telegramAuthCodeController() {
+		return new TelegramAuthCodeControllerImpl();
+	}
+
+	@Bean
+	public TelegramBot telegramBot() {
+		return new TelegramBot();
+	}
+
+	@Bean
+	public TelegramManager telegramManager() {
+		ApiContextInitializer.init();
+		TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
+		try {
+			telegramBotsApi.registerBot(telegramBot());
+		} catch (TelegramApiRequestException e) {
+			e.printStackTrace();
+		}
+
+		return new TelegramManager();
+	}
+
+	@Bean
 	public UserMapper userMapper() {
 		return new UserMapperImpl();
 	}
@@ -75,8 +102,8 @@ public class SpringConfiguration {
 	}
 
 	@Bean
-	public EmailNotificationWorker emailNotificationWorker() {
-		return new EmailNotificationWorker();
+	public UserNotificationWorker emailNotificationWorker() {
+		return new UserNotificationWorker();
 	}
 
 	@Bean
