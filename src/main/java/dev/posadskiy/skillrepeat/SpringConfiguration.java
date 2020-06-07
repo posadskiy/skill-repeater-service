@@ -1,8 +1,12 @@
 package dev.posadskiy.skillrepeat;
 
-import dev.posadskiy.skillrepeat.annotation.bpp.SecurityAnnotationBeanPostProcessor;
+import com.posadskiy.restsecurity.annotation.bpp.SecurityAnnotationBeanPostProcessor;
+import com.posadskiy.restsecurity.controller.SessionSecurityController;
+import com.posadskiy.restsecurity.controller.UserSecurityController;
 import dev.posadskiy.skillrepeat.controller.*;
 import dev.posadskiy.skillrepeat.controller.impl.*;
+import dev.posadskiy.skillrepeat.controller.security.SessionSecurityControllerImpl;
+import dev.posadskiy.skillrepeat.controller.security.UserSecurityControllerImpl;
 import dev.posadskiy.skillrepeat.manager.TelegramManager;
 import dev.posadskiy.skillrepeat.mapper.SkillMapperImpl;
 import dev.posadskiy.skillrepeat.mapper.SkillMapper;
@@ -56,6 +60,16 @@ public class SpringConfiguration {
 	@Bean
 	public TelegramAuthCodeController telegramAuthCodeController() {
 		return new TelegramAuthCodeControllerImpl();
+	}
+	
+	@Bean
+	public UserSecurityController userSecurityController() {
+		return new UserSecurityControllerImpl();
+	}
+	
+	@Bean
+	public SessionSecurityController sessionSecurityController() {
+		return new SessionSecurityControllerImpl();
 	}
 
 	@Bean

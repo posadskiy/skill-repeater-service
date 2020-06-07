@@ -1,5 +1,6 @@
 package dev.posadskiy.skillrepeat;
 
+import com.posadskiy.restsecurity.exception.*;
 import dev.posadskiy.skillrepeat.dto.RestException;
 import dev.posadskiy.skillrepeat.exception.*;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +29,15 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(restException, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	@ExceptionHandler(UserDoesNotExistException.class)
-	public ResponseEntity<?> userDoesNotExistExceptionHandler(UserDoesNotExistException exception) {
+	@ExceptionHandler(com.posadskiy.restsecurity.exception.UserDoesNotExistException.class)
+	public ResponseEntity<?> userDoesNotExistSecurityExceptionHandler(com.posadskiy.restsecurity.exception.UserDoesNotExistException exception) {
+		log.debug("UserDoesNotExistException", exception);
+		RestException restException = new RestException("Request error", 3, "User does not exist. Please, check your request");
+		return new ResponseEntity<>(restException, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	@ExceptionHandler(dev.posadskiy.skillrepeat.exception.UserDoesNotExistException.class)
+	public ResponseEntity<?> userDoesNotExistExceptionHandler(dev.posadskiy.skillrepeat.exception.UserDoesNotExistException exception) {
 		log.debug("UserDoesNotExistException", exception);
 		RestException restException = new RestException("Request error", 3, "User does not exist. Please, check your request");
 		return new ResponseEntity<>(restException, HttpStatus.INTERNAL_SERVER_ERROR);

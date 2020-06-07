@@ -1,5 +1,6 @@
 package dev.posadskiy.skillrepeat.rest;
 
+import com.posadskiy.restsecurity.rest.RequestWrapper;
 import dev.posadskiy.skillrepeat.controller.*;
 import dev.posadskiy.skillrepeat.db.model.DbConfirmEmail;
 import dev.posadskiy.skillrepeat.db.model.DbResetPassword;

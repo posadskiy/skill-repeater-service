@@ -1,8 +1,8 @@
 package dev.posadskiy.skillrepeat.controller;
 
+import com.posadskiy.restsecurity.rest.RequestWrapper;
 import dev.posadskiy.skillrepeat.db.model.DbUser;
 import dev.posadskiy.skillrepeat.dto.User;
-import dev.posadskiy.skillrepeat.rest.RequestWrapper;
 
 public interface UserController {
 	User getUserById(RequestWrapper requestWrapper);

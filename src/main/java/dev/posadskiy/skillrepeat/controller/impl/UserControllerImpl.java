@@ -1,6 +1,7 @@
 package dev.posadskiy.skillrepeat.controller.impl;
 
-import dev.posadskiy.skillrepeat.annotation.Security;
+import com.posadskiy.restsecurity.annotation.Security;
+import com.posadskiy.restsecurity.rest.RequestWrapper;
 import dev.posadskiy.skillrepeat.controller.UserController;
 import dev.posadskiy.skillrepeat.db.UserRepository;
 import dev.posadskiy.skillrepeat.db.model.DbSkill;
@@ -13,7 +14,6 @@ import dev.posadskiy.skillrepeat.exception.UserDoesNotExistException;
 import dev.posadskiy.skillrepeat.exception.UserPasswordDoesNotMatchException;
 import dev.posadskiy.skillrepeat.mapper.SkillMapper;
 import dev.posadskiy.skillrepeat.mapper.UserMapper;
-import dev.posadskiy.skillrepeat.rest.RequestWrapper;
 import dev.posadskiy.skillrepeat.validator.UserValidator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

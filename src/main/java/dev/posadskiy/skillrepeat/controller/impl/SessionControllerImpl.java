@@ -15,22 +15,6 @@ public class SessionControllerImpl implements SessionController {
 	@Autowired
 	SessionRepository repository;
 
-	public DbSession getSessionById(String sessionId) {
-		Optional<DbSession> byId = repository.findById(sessionId);
-		return byId.orElse(null);
-	}
-
-	public boolean isSessionExist(String sessionId) {
-		DbSession sessionById = getSessionById(sessionId);
-		return sessionById != null;
-
-	}
-
-	public boolean isSessionExpired(String sessionId) {
-		DbSession sessionById = getSessionById(sessionId);
-		return sessionById.getTime() < System.currentTimeMillis();
-	}
-
 	public DbSession create(String sessionId, String userId) {
 		return repository.save(new DbSession(sessionId, userId, System.currentTimeMillis() + SESSION_LIFE_TIME_MS));
 	}
