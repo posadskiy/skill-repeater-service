@@ -1,0 +1,21 @@
+# Maven specific
+.m2/
+target/
+**/target/
+
+# Git
+.git/
+.gitignore
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose*.yml
+.env
