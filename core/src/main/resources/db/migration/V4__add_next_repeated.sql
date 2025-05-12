@@ -1,0 +1,2 @@
+ALTER TABLE skills
+    ADD COLUMN next_repeated TIMESTAMP WITH TIME ZONE;

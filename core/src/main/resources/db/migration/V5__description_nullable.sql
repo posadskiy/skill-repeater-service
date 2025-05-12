@@ -1,0 +1,1 @@
+ALTER TABLE skills ALTER COLUMN description DROP NOT NULL;

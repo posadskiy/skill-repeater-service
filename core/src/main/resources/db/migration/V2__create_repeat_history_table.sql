@@ -1,0 +1,6 @@
+CREATE TABLE repeat_history (
+    id BIGSERIAL PRIMARY KEY,
+    skill_id TEXT NOT NULL,
+    comment TEXT,
+    repeated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
