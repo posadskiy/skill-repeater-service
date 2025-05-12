@@ -1,0 +1,52 @@
+services:
+  database:
+    image: postgres:15
+    container_name: skill-repeater-db
+    restart: always
+    environment:
+      POSTGRES_DB: ${SKILL_REPEATER_DATABASE_NAME}
+      POSTGRES_USER: ${SKILL_REPEATER_DATABASE_USER}
+      POSTGRES_PASSWORD: ${SKILL_REPEATER_DATABASE_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  zipkin:
+    image: ghcr.io/openzipkin/zipkin-slim:${TAG:-latest}
+    container_name: zipkin-repeater
+    # Environment settings are defined here https://github.com/openzipkin/zipkin/blob/master/zipkin-server/README.md#environment-variables
+    environment:
+      - STORAGE_TYPE=mem
+      # Uncomment to enable self-tracing
+      # - SELF_TRACING_ENABLED=true
+      # Uncomment to increase heap size
+      # - JAVA_OPTS=-Xms128m -Xmx128m -XX:+ExitOnOutOfMemoryError
+    ports:
+      # Port used for the Zipkin UI and HTTP Api
+      - "9411:9411"
+    # Uncomment to enable debug logging
+    # command: --logging.level.zipkin2=DEBUG
+
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: skill-repeater-web
+    restart: always
+    depends_on:
+      - database
+      - zipkin
+    environment:
+      MICRONAUT_ENVIRONMENTS: prod
+      DATASOURCE_URL: jdbc:postgresql://skill-repeater-db:5432/${SKILL_REPEATER_DATABASE_NAME}
+      DATASOURCE_USERNAME: ${SKILL_REPEATER_DATABASE_USER}
+      DATASOURCE_PASSWORD: ${SKILL_REPEATER_DATABASE_PASSWORD}
+      JWT_GENERATOR_SIGNATURE_SECRET: ${JWT_GENERATOR_SIGNATURE_SECRET}
+    ports:
+      - "8082:8082"
+      - "5005:5005"  # Debug port
+
+volumes:
+  postgres_data:
