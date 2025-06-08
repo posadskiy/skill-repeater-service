@@ -3,7 +3,7 @@ micronaut:
   application:
     name: skill-repeater-service
   server:
-    port: 8082
+    port: 8210
     cors:
       enabled: true
       configurations:

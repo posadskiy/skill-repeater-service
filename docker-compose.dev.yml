@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: ${SKILL_REPEATER_DATABASE_USER}
       POSTGRES_PASSWORD: ${SKILL_REPEATER_DATABASE_PASSWORD}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -49,8 +49,8 @@ services:
       DATASOURCE_PASSWORD: ${SKILL_REPEATER_DATABASE_PASSWORD}
       JWT_GENERATOR_SIGNATURE_SECRET: ${JWT_GENERATOR_SIGNATURE_SECRET}
     ports:
-      - "8082:8082"
-      - "5005:5005"  # Debug port
+      - "8210:8210"
+      - "5007:5005"  # Debug port
 
 volumes:
   postgres_data:

@@ -4,8 +4,6 @@ import com.posadskiy.skillrepeater.api.dto.SkillDto;
 import com.posadskiy.skillrepeater.core.mapper.dto.SkillDtoMapper;
 import com.posadskiy.skillrepeater.core.model.Skill;
 import com.posadskiy.skillrepeater.core.service.SkillService;
-import io.micronaut.http.HttpResponse;
-import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.*;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
@@ -48,10 +46,8 @@ public class SkillController {
 
     @Post("add-all")
     @NewSpan
-    public MutableHttpResponse<Object> add(@Body final List<SkillDto> userDtos) {
-        userDtos.forEach(this::add);
-
-        return HttpResponse.ok();
+    public List<SkillDto> add(@Body final List<SkillDto> userDtos) {
+        return userDtos.stream().map(this::add).toList();
     }
 
     @Post("edit")
