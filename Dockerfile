@@ -19,7 +19,7 @@ WORKDIR /app
 COPY --from=build /app/web/target/web-*.jar app.jar
 
 # Expose the application port (defined in application.yaml)
-EXPOSE 8082
+EXPOSE 8210
 
 # Run the application
 ENTRYPOINT ["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005", "-jar", "-Dmicronaut.environments=${MICRONAUT_ENVIRONMENTS}", "app.jar"]
