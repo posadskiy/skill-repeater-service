@@ -8,6 +8,12 @@ import io.micronaut.http.annotation.*;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.tracing.annotation.NewSpan;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
@@ -15,6 +21,7 @@ import java.util.List;
 @Secured(SecurityRule.IS_AUTHENTICATED)
 @Controller("v0/skill")
 @NoArgsConstructor
+@Tag(name = "Skill Management", description = "APIs for managing user skills")
 public class SkillController {
 
     private SkillService skillService;
@@ -27,7 +34,19 @@ public class SkillController {
 
     @Get("get-all/{userId}")
     @NewSpan
-    public List<SkillDto> getAll(@PathVariable final String userId) {
+    @Operation(
+        summary = "Get all skills for a user",
+        description = "Retrieves a list of all skills associated with the specified user ID"
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successfully retrieved skills",
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = SkillDto.class))
+    )
+    public List<SkillDto> getAll(
+        @Parameter(description = "ID of the user to get skills for", required = true)
+        @PathVariable final String userId
+    ) {
         return skillService.getAllByUser(userId)
             .stream()
             .map(skillDtoMapper::mapToDto)
@@ -36,7 +55,19 @@ public class SkillController {
 
     @Post("add")
     @NewSpan
-    public SkillDto add(@Body final SkillDto userDto) {
+    @Operation(
+        summary = "Add a new skill",
+        description = "Creates a new skill for a user"
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successfully added skill",
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = SkillDto.class))
+    )
+    public SkillDto add(
+        @Parameter(description = "Skill data to add", required = true)
+        @Body final SkillDto userDto
+    ) {
         final Skill user = skillDtoMapper.mapFromDto(userDto);
 
         return skillDtoMapper.mapToDto(
@@ -46,13 +77,37 @@ public class SkillController {
 
     @Post("add-all")
     @NewSpan
-    public List<SkillDto> add(@Body final List<SkillDto> userDtos) {
+    @Operation(
+        summary = "Add multiple skills",
+        description = "Creates multiple new skills for a user"
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successfully added skills",
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = SkillDto.class))
+    )
+    public List<SkillDto> add(
+        @Parameter(description = "List of skills to add", required = true)
+        @Body final List<SkillDto> userDtos
+    ) {
         return userDtos.stream().map(this::add).toList();
     }
 
     @Post("edit")
     @NewSpan
-    public SkillDto edit(@Body final SkillDto userDto) {
+    @Operation(
+        summary = "Edit an existing skill",
+        description = "Updates an existing skill's information"
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successfully updated skill",
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = SkillDto.class))
+    )
+    public SkillDto edit(
+        @Parameter(description = "Updated skill data", required = true)
+        @Body final SkillDto userDto
+    ) {
         final Skill user = skillDtoMapper.mapFromDto(userDto);
 
         return skillDtoMapper.mapToDto(
@@ -62,10 +117,20 @@ public class SkillController {
 
     @Post("delete")
     @NewSpan
-    public void delete(@Body final SkillDto userDto) {
+    @Operation(
+        summary = "Delete a skill",
+        description = "Removes a skill from the system"
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successfully deleted skill"
+    )
+    public void delete(
+        @Parameter(description = "Skill to delete", required = true)
+        @Body final SkillDto userDto
+    ) {
         final Skill user = skillDtoMapper.mapFromDto(userDto);
 
         skillService.deleteSkill(user);
     }
-
 }
