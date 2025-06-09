@@ -32,6 +32,30 @@ public class SkillController {
         this.skillDtoMapper = skillDtoMapper;
     }
 
+    @Get("get/{id}")
+    @NewSpan
+    @Operation(
+        summary = "Get skill by ID",
+        description = "Retrieves a specific skill by its unique identifier"
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successfully retrieved skill",
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = SkillDto.class))
+    )
+    @ApiResponse(
+        responseCode = "404",
+        description = "Skill not found"
+    )
+    public SkillDto getById(
+        @Parameter(description = "ID of the skill to retrieve", required = true, example = "123e4567-e89b-12d3-a456-426614174000")
+        @PathVariable final String id
+    ) {
+        return skillDtoMapper.mapToDto(
+            skillService.get(id)
+        );
+    }
+
     @Get("get-all/{userId}")
     @NewSpan
     @Operation(
