@@ -20,11 +20,11 @@ import lombok.NoArgsConstructor;
 @Tag(name = "Skill Repetition", description = "APIs for managing skill repetition")
 public class RepeatController {
     private SkillService skillService;
-    private RepeatHistoryService repeatService;
+    private RepeatHistoryService repeatHistoryService;
     
-    public RepeatController(SkillService skillService, RepeatHistoryService repeatService) {
+    public RepeatController(SkillService skillService, RepeatHistoryService repeatHistoryService) {
         this.skillService = skillService;
-        this.repeatService = repeatService;
+        this.repeatHistoryService = repeatHistoryService;
     }
 
     @Post("{id}")
@@ -42,6 +42,6 @@ public class RepeatController {
         String id
     ) {
         skillService.repeatSkill(id);
-        repeatService.repeatSkill(id);
+        repeatHistoryService.repeatSkill(id);
     }
 }
