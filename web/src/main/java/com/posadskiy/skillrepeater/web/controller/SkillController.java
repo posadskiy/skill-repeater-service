@@ -157,4 +157,42 @@ public class SkillController {
 
         skillService.deleteSkill(user);
     }
+
+    @Delete("delete/{id}")
+    @NewSpan
+    @Operation(
+        summary = "Delete skill by ID",
+        description = "Removes a skill from the system by its ID"
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successfully deleted skill"
+    )
+    @ApiResponse(
+        responseCode = "404",
+        description = "Skill not found"
+    )
+    public void deleteById(
+        @Parameter(description = "ID of the skill to delete", required = true)
+        @PathVariable final String id
+    ) {
+        skillService.deleteById(id);
+    }
+
+    @Delete("delete-all/{userId}")
+    @NewSpan
+    @Operation(
+        summary = "Delete all skills for a user",
+        description = "Removes all skills associated with the specified user ID"
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successfully deleted all skills for the user"
+    )
+    public void deleteAllByUser(
+        @Parameter(description = "ID of the user whose skills should be deleted", required = true)
+        @PathVariable final String userId
+    ) {
+        skillService.deleteAllByUser(userId);
+    }
 }
