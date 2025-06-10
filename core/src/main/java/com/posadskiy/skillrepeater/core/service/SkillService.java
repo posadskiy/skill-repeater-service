@@ -11,8 +11,13 @@ public interface SkillService {
 
     void deleteSkill(Skill skill);
 
+    void deleteById(String id);
+
+    void deleteAllByUser(String userId);
+
     void repeatSkill(String id);
 
     List<Skill> getAllByUser(String userId);
+
     Skill get(String id);
 }

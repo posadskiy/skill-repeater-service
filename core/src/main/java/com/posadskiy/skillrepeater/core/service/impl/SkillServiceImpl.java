@@ -5,11 +5,12 @@ import com.posadskiy.skillrepeater.core.model.Skill;
 import com.posadskiy.skillrepeater.core.service.SkillService;
 import com.posadskiy.skillrepeater.core.storage.db.SkillRepository;
 import com.posadskiy.skillrepeater.core.storage.db.entity.SkillEntity;
+import io.micronaut.http.HttpStatus;
+import io.micronaut.http.exceptions.HttpStatusException;
 import jakarta.inject.Singleton;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Singleton
@@ -52,18 +53,31 @@ public class SkillServiceImpl implements SkillService {
     }
 
     @Override
+    public void deleteById(String id) {
+        if (!skillRepository.existsById(id)) {
+            throw new HttpStatusException(HttpStatus.NOT_FOUND, "Skill not found with id: " + id);
+        }
+        skillRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteAllByUser(String userId) {
+        skillRepository.deleteByUserId(userId);
+    }
+
+    @Override
     public void repeatSkill(String id) {
         var loaded = get(id);
 
         loaded.setLastRepeated(LocalDateTime.now());
-        loaded.setNextRepeated(loaded.getLastRepeated().plus(loaded.getNumber(), ChronoUnit.valueOf(loaded.getPeriod())));
+        loaded.setNextRepeated(loaded.getLastRepeated().plus(loaded.getNumber(), loaded.getPeriod()));
         loaded.setLevel(loaded.getLevel() + 1);
 
         skillRepository.update(
             skillEntityMapper.mapToEntity(loaded)
         );
     }
-    
+
     public List<Skill> getAllByUser(String userId) {
         return skillRepository
             .findByUserId(userId)
@@ -78,6 +92,6 @@ public class SkillServiceImpl implements SkillService {
             .mapFromEntity(
                 skillRepository
                     .findById(id)
-                    .orElseThrow(RuntimeException::new));
+                    .orElseThrow(() -> new HttpStatusException(HttpStatus.NOT_FOUND, "Skill not found with id: " + id)));
     }
 }
