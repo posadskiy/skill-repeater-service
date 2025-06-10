@@ -3,6 +3,7 @@ package com.posadskiy.skillrepeater.core.model;
 import io.micronaut.core.annotation.Introspected;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Introspected
 public class Skill {
@@ -10,7 +11,7 @@ public class Skill {
     private String userId;
     private String name;
     private String description;
-    private String period;
+    private ChronoUnit period;
     private Integer number;
     private LocalDateTime lastRepeated;
     private LocalDateTime nextRepeated;
@@ -56,11 +57,11 @@ public class Skill {
         this.description = description;
     }
 
-    public String getPeriod() {
+    public ChronoUnit getPeriod() {
         return period;
     }
 
-    public void setPeriod(String period) {
+    public void setPeriod(ChronoUnit period) {
         this.period = period;
     }
 

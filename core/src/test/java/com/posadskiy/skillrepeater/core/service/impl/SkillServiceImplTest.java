@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,7 +47,7 @@ class SkillServiceImplTest {
         testSkill.setUserId(testUserId);
         testSkill.setName("Java");
         testSkill.setDescription("Java programming language");
-        testSkill.setPeriod("DAYS");
+        testSkill.setPeriod(ChronoUnit.DAYS);
         testSkill.setNumber(1);
         testSkill.setLevel(1);
         testSkill.setLastRepeated(LocalDateTime.now());

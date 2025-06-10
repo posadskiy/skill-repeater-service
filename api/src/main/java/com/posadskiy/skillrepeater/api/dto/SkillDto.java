@@ -7,6 +7,7 @@ import io.micronaut.serde.annotation.Serdeable;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 @Serdeable
@@ -25,8 +26,8 @@ public record SkillDto(
     @Schema(description = "Optional description of the skill", example = "Core Java concepts and best practices")
     @Nullable String description,
 
-    @Schema(description = "Repetition period (e.g., 'daily', 'weekly', 'monthly')", example = "daily")
-    @NonNull @NotBlank String period,
+    @Schema(description = "Repetition period (e.g., 'HOURS', 'DAYS', 'WEEKS', 'MONTHS', 'YEARS')", example = "DAYS")
+    @NonNull @NotBlank ChronoUnit period,
 
     @Schema(description = "Number of repetitions or specific interval", example = "3")
     @NonNull @NotBlank String number,

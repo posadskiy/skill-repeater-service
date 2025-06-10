@@ -33,6 +33,16 @@ micronaut:
       generator:
         access-token:
           expiration: 1800
+    intercept-url-map:
+      - pattern: /swagger/**
+        access:
+          - isAnonymous()
+      - pattern: /swagger-ui/**
+        access:
+          - isAnonymous()
+      - pattern: /openapi/**
+        access:
+          - isAnonymous()
 #end::micronaut[]
 
 #tag::database[]

@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Data
 @MappedEntity("skills")
@@ -88,6 +89,10 @@ public class SkillEntity {
 
     public void setPeriod(@NonNull @NotNull String period) {
         this.period = period;
+    }
+
+    public void setPeriod(@NonNull @NotNull ChronoUnit period) {
+        this.period = period.name();
     }
 
     public @NonNull @NotNull Integer getNumber() {
