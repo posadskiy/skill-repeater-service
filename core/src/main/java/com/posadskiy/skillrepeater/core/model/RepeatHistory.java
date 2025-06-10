@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public class RepeatHistory {
     private String id;
     private String skillId;
+    private String userId;
     private String comment;
     private LocalDateTime repeatedAt;
 
@@ -25,6 +26,14 @@ public class RepeatHistory {
 
     public void setSkillId(String skillId) {
         this.skillId = skillId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getComment() {

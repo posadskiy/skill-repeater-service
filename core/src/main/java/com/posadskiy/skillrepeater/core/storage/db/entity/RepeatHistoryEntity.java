@@ -23,6 +23,10 @@ public class RepeatHistoryEntity {
     @NotBlank
     private String skillId;
 
+    @NonNull
+    @NotBlank
+    private String userId;
+
     @Nullable
     private String comment;
 
@@ -43,6 +47,14 @@ public class RepeatHistoryEntity {
 
     public void setSkillId(@NonNull @NotBlank String skillId) {
         this.skillId = skillId;
+    }
+
+    public @NonNull @NotBlank String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(@NonNull @NotBlank String userId) {
+        this.userId = userId;
     }
 
     public @Nullable String getComment() {

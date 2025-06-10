@@ -1,6 +1,5 @@
 package com.posadskiy.skillrepeater.web.controller;
 
-
 import com.posadskiy.skillrepeater.core.service.RepeatHistoryService;
 import com.posadskiy.skillrepeater.core.service.SkillService;
 import io.micronaut.http.annotation.Controller;

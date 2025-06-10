@@ -2,6 +2,7 @@ package com.posadskiy.skillrepeater.core.service.impl;
 
 import com.posadskiy.skillrepeater.core.mapper.entity.RepeatHistoryMapper;
 import com.posadskiy.skillrepeater.core.model.RepeatHistory;
+import com.posadskiy.skillrepeater.core.service.SkillService;
 import com.posadskiy.skillrepeater.core.storage.db.RepeatHistoryRepository;
 import com.posadskiy.skillrepeater.core.storage.db.entity.RepeatHistoryEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,9 @@ class RepeatHistoryServiceImplTest {
 
     @Mock
     private RepeatHistoryMapper repeatHistoryMapper;
+    
+    @Mock
+    private SkillService skillService;
 
     private RepeatHistoryServiceImpl repeatHistoryService;
 
@@ -32,7 +36,7 @@ class RepeatHistoryServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        repeatHistoryService = new RepeatHistoryServiceImpl(repeatHistoryRepository, repeatHistoryMapper);
+        repeatHistoryService = new RepeatHistoryServiceImpl(repeatHistoryRepository, repeatHistoryMapper, skillService);
 
         // Setup test data
         testSkillId = UUID.randomUUID().toString();
