@@ -9,8 +9,10 @@ import jakarta.inject.Singleton;
 public interface SkillDtoMapper {
 
     @Mapper.Mapping(from = "name", to = "name")
+    @Mapper.Mapping(from = "period", to = "period")
     Skill mapFromDto(SkillDto user);
 
     @Mapper.Mapping(from = "name", to = "name")
+    @Mapper.Mapping(from = "period", to = "period")
     SkillDto mapToDto(Skill user);
 }
