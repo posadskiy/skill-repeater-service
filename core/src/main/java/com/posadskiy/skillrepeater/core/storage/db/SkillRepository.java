@@ -15,4 +15,6 @@ public interface SkillRepository extends CrudRepository<SkillEntity, String> {
     List<SkillEntity> findByNextRepeatedBetween(LocalDateTime start, LocalDateTime end);
 
     List<SkillEntity> findByUserId(String userId);
+
+    void deleteByUserId(String userId);
 }
