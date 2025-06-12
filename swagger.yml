@@ -1,8 +1,71 @@
 openapi: 3.0.1
+info:
+  title: Skill Repeater Service
+  description: A service for managing and tracking skill repetition intervals to help
+    users maintain and improve their skills through spaced repetition
+  contact:
+    name: Dimitri Posadskiy
+    url: https://posadskiy.com
+    email: support@posadskiy.com
+  license:
+    name: MIT
+    url: https://opensource.org/license/mit
+  version: 0.1.0
+servers:
+- url: /
+  description: Default Server URL
+security:
+- bearerAuth: []
 tags:
 - name: Skill Repetition
   description: APIs for managing skill repetition
+- name: Repeat History
+  description: APIs for managing skill repetition history
+- name: Skill Management
+  description: APIs for managing user skills
 paths:
+  /v0/repeat-history/skill/{skillId}:
+    get:
+      tags:
+      - Repeat History
+      summary: Get repeat history for a skill
+      description: Retrieves the repetition history for a specific skill
+      operationId: getBySkill
+      parameters:
+      - name: skillId
+        in: path
+        description: ID of the skill to get history for
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successfully retrieved repeat history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RepeatHistoryDto"
+  /v0/repeat-history/user/{userId}:
+    get:
+      tags:
+      - Repeat History
+      summary: Get repeat history for a user
+      description: Retrieves the repetition history for all skills of a specific user
+      operationId: getByUser
+      parameters:
+      - name: userId
+        in: path
+        description: ID of the user to get history for
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successfully retrieved repeat history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RepeatHistoryDto"
   /v0/repeat/{id}:
     post:
       tags:
@@ -20,3 +83,275 @@ paths:
       responses:
         "200":
           description: Successfully recorded skill repetition
+  /v0/skill/add:
+    post:
+      tags:
+      - Skill Management
+      summary: Add a new skill
+      description: Creates a new skill for a user
+      operationId: add
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SkillDto"
+        required: true
+      responses:
+        "200":
+          description: Successfully added skill
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillDto"
+  /v0/skill/add-all:
+    post:
+      tags:
+      - Skill Management
+      summary: Add multiple skills
+      description: Creates multiple new skills for a user
+      operationId: add_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/SkillDto"
+        required: true
+      responses:
+        "200":
+          description: Successfully add_1ed skills
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillDto"
+  /v0/skill/delete:
+    post:
+      tags:
+      - Skill Management
+      summary: Delete a skill
+      description: Removes a skill from the system
+      operationId: delete
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SkillDto"
+        required: true
+      responses:
+        "200":
+          description: Successfully deleted skill
+  /v0/skill/delete-all/{userId}:
+    delete:
+      tags:
+      - Skill Management
+      summary: Delete all skills for a user
+      description: Removes all skills associated with the specified user ID
+      operationId: deleteAllByUser
+      parameters:
+      - name: userId
+        in: path
+        description: ID of the user whose skills should be deleted
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successfully deleted all skills for the user
+  /v0/skill/delete/{id}:
+    delete:
+      tags:
+      - Skill Management
+      summary: Delete skill by ID
+      description: Removes a skill from the system by its ID
+      operationId: deleteById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the skill to delete
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successfully deleted skill
+        "404":
+          description: Skill not found
+  /v0/skill/edit:
+    post:
+      tags:
+      - Skill Management
+      summary: Edit an existing skill
+      description: Updates an existing skill's information
+      operationId: edit
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SkillDto"
+        required: true
+      responses:
+        "200":
+          description: Successfully updated skill
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillDto"
+  /v0/skill/get-all/{userId}:
+    get:
+      tags:
+      - Skill Management
+      summary: Get all skills for a user
+      description: Retrieves a list of all skills associated with the specified user
+        ID
+      operationId: getAll
+      parameters:
+      - name: userId
+        in: path
+        description: ID of the user to get skills for
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successfully retrieved skills
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillDto"
+  /v0/skill/get/{id}:
+    get:
+      tags:
+      - Skill Management
+      summary: Get skill by ID
+      description: Retrieves a specific skill by its unique identifier
+      operationId: getById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the skill to retrieve
+        required: true
+        schema:
+          type: string
+        example: 123e4567-e89b-12d3-a456-426614174000
+      responses:
+        "200":
+          description: Successfully retrieved skill
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillDto"
+        "404":
+          description: Skill not found
+components:
+  schemas:
+    ChronoUnit:
+      type: string
+      description: "Repetition period (e.g., 'HOURS', 'DAYS', 'WEEKS', 'MONTHS', 'YEARS')"
+      example: DAYS
+      enum:
+      - NANOS
+      - MICROS
+      - MILLIS
+      - SECONDS
+      - MINUTES
+      - HOURS
+      - HALF_DAYS
+      - DAYS
+      - WEEKS
+      - MONTHS
+      - YEARS
+      - DECADES
+      - CENTURIES
+      - MILLENNIA
+      - ERAS
+      - FOREVER
+    RepeatHistoryDto:
+      required:
+      - id
+      - repeatedAt
+      - skillId
+      - userId
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the history entry
+          example: 123e4567-e89b-12d3-a456-426614174000
+        skillId:
+          type: string
+          description: ID of the skill that was repeated
+          example: 123e4567-e89b-12d3-a456-426614174000
+        userId:
+          type: string
+          description: ID of the user who repeated the skill
+          example: 123e4567-e89b-12d3-a456-426614174000
+        comment:
+          type: string
+          description: Optional comment about the repetition
+          example: Completed all exercises
+        repeatedAt:
+          type: string
+          description: Date and time when the skill was repeated
+          format: date-time
+          example: 2024-03-20T10:30:00Z
+      description: Data transfer object representing a skill repetition history entry
+    SkillDto:
+      required:
+      - name
+      - number
+      - period
+      - userId
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the skill
+          nullable: true
+          example: 123e4567-e89b-12d3-a456-426614174000
+        userId:
+          type: integer
+          description: ID of the user who owns this skill
+          format: int64
+          example: 1
+        name:
+          minLength: 1
+          type: string
+          description: Name of the skill
+          example: Java Programming
+        description:
+          type: string
+          description: Optional description of the skill
+          nullable: true
+          example: Core Java concepts and best practices
+        period:
+          allOf:
+          - $ref: "#/components/schemas/ChronoUnit"
+          - description: "Repetition period (e.g., 'HOURS', 'DAYS', 'WEEKS', 'MONTHS',\
+              \ 'YEARS')"
+            example: DAYS
+        number:
+          minLength: 1
+          type: string
+          description: Number of repetitions or specific interval
+          example: "3"
+        lastRepeat:
+          type: string
+          description: Date and time of the last repetition
+          format: date-time
+          nullable: true
+          example: 2024-03-20T10:30:00Z
+        level:
+          maximum: 5
+          minimum: 1
+          type: integer
+          description: Current level of skill mastery (1-5)
+          format: int32
+          nullable: true
+          example: 3
+      description: Data transfer object representing a skill that needs to be repeated
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
