@@ -66,23 +66,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RepeatHistoryDto"
-  /v0/repeat/{id}:
-    post:
-      tags:
-      - Skill Repetition
-      summary: Mark a skill as repeated
-      description: Records a repetition of a skill and updates its repetition history
-      operationId: repeat
-      parameters:
-      - name: id
-        in: path
-        description: ID of the skill to mark as repeated
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: Successfully recorded skill repetition
   /v0/skill/add:
     post:
       tags:
@@ -243,6 +226,23 @@ paths:
                 $ref: "#/components/schemas/SkillDto"
         "404":
           description: Skill not found
+  /v0/skill/repeat/{id}:
+    post:
+      tags:
+      - Skill Repetition
+      summary: Mark a skill as repeated
+      description: Records a repetition of a skill and updates its repetition history
+      operationId: repeat
+      parameters:
+      - name: id
+        in: path
+        description: ID of the skill to mark as repeated
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successfully recorded skill repetition
 components:
   schemas:
     ChronoUnit:
