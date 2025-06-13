@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NoArgsConstructor;
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
-@Controller("v0/repeat")
+@Controller("v0/skill/repeat")
 @NoArgsConstructor
 @Tag(name = "Skill Repetition", description = "APIs for managing skill repetition")
 public class RepeatController {
