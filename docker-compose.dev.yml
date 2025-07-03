@@ -1,5 +1,5 @@
 services:
-  database:
+  skill-repeater-db:
     image: postgres:15
     container_name: skill-repeater-db
     restart: always
@@ -11,35 +11,19 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - skill-repeater-network
 
-  zipkin:
-    image: ghcr.io/openzipkin/zipkin-slim:${TAG:-latest}
-    container_name: zipkin-repeater
-    # Environment settings are defined here https://github.com/openzipkin/zipkin/blob/master/zipkin-server/README.md#environment-variables
-    environment:
-      - STORAGE_TYPE=mem
-      # Uncomment to enable self-tracing
-      # - SELF_TRACING_ENABLED=true
-      # Uncomment to increase heap size
-      # - JAVA_OPTS=-Xms128m -Xmx128m -XX:+ExitOnOutOfMemoryError
-    ports:
-      # Port used for the Zipkin UI and HTTP Api
-      - "9411:9411"
-    # Uncomment to enable debug logging
-    # command: --logging.level.zipkin2=DEBUG
-
-
-  web:
+  skill-repeater-service:
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
       - ~/.m2:/root/.m2
-    container_name: skill-repeater-web
-    restart: always
+    container_name: skill-repeater-service
+    restart: unless-stopped
     depends_on:
-      - database
-      - zipkin
+      - skill-repeater-db
     environment:
       MICRONAUT_ENVIRONMENTS: dev
       GITHUB_USERNAME: ${GITHUB_USERNAME}
@@ -48,9 +32,28 @@ services:
       DATASOURCE_USERNAME: ${SKILL_REPEATER_DATABASE_USER}
       DATASOURCE_PASSWORD: ${SKILL_REPEATER_DATABASE_PASSWORD}
       JWT_GENERATOR_SIGNATURE_SECRET: ${JWT_GENERATOR_SIGNATURE_SECRET}
+      JAEGER_SERVICE_NAME: auth-service
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    labels:
+      - "logging=promtail"
+      - "service=skill-repeater-service"
+    networks:
+      - skill-repeater-network
+      - observability-stack-network
     ports:
       - "8210:8210"
-      - "5007:5005"  # Debug port
+      - "5010:5005"  # Debug port
 
 volumes:
   postgres_data:
+    
+networks:
+  observability-stack-network:
+    external: true 
+  skill-repeater-network:
+    external: true
