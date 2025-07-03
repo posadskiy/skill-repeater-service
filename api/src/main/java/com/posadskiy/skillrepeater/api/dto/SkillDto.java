@@ -33,7 +33,10 @@ public record SkillDto(
     @NonNull @NotBlank String number,
 
     @Schema(description = "Date and time of the last repetition", example = "2024-03-20T10:30:00Z")
-    @Nullable Date lastRepeat,
+    @Nullable Date lastRepeated,
+    
+    @Schema(description = "Date and time of the next repetition", example = "2024-04-20T10:30:00Z")
+    @Nullable Date nextRepeated,
 
     @Schema(description = "Current level of skill mastery (1-5)", example = "3", minimum = "1", maximum = "5")
     @Nullable Integer level
