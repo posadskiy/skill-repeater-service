@@ -39,9 +39,16 @@ public class SkillServiceImpl implements SkillService {
 
     @Override
     public Skill editSkill(Skill skill) {
+        var loaded = get(skill.getId());
+        
+        loaded.setName(skill.getName());
+        loaded.setDescription(skill.getDescription());
+        loaded.setPeriod(skill.getPeriod());
+        loaded.setNumber(skill.getNumber());
+        
         return skillEntityMapper.mapFromEntity(
             skillRepository.update(
-                skillEntityMapper.mapToEntity(skill)
+                skillEntityMapper.mapToEntity(loaded)
             ));
     }
 
