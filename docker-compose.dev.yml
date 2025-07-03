@@ -32,7 +32,7 @@ services:
       DATASOURCE_USERNAME: ${SKILL_REPEATER_DATABASE_USER}
       DATASOURCE_PASSWORD: ${SKILL_REPEATER_DATABASE_PASSWORD}
       JWT_GENERATOR_SIGNATURE_SECRET: ${JWT_GENERATOR_SIGNATURE_SECRET}
-      JAEGER_SERVICE_NAME: auth-service
+      JAEGER_SERVICE_NAME: skill-repeater-service
       JAEGER_ENDPOINT: http://jaeger:14268/api/traces
     logging:
       driver: "json-file"
