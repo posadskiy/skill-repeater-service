@@ -37,7 +37,8 @@
         </repository>
         <repository>
             <id>github</id>
-            <url>https://maven.pkg.github.com/posadskiy/*</url>
+            <name>GitHub posadskiy Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/posadskiy/email-template-service</url>
         </repository>
     </repositories>
 
@@ -45,7 +46,7 @@
         <!-- Modules -->
         <dependency>
             <groupId>com.posadskiy.email</groupId>
-            <artifactId>template-api</artifactId>
+            <artifactId>email-template-service-api</artifactId>
             <version>0.1</version>
         </dependency>
         <!-- Modules -->
