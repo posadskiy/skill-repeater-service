@@ -1,8 +1,8 @@
 services:
-  database:
+  skill-repeater-db:
     image: postgres:15
     container_name: skill-repeater-db
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${SKILL_REPEATER_DATABASE_NAME}
       POSTGRES_USER: ${SKILL_REPEATER_DATABASE_USER}
@@ -11,42 +11,61 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - skill-repeater-network
 
-  zipkin:
-    image: ghcr.io/openzipkin/zipkin-slim:${TAG:-latest}
-    container_name: zipkin-repeater
-    # Environment settings are defined here https://github.com/openzipkin/zipkin/blob/master/zipkin-server/README.md#environment-variables
-    environment:
-      - STORAGE_TYPE=mem
-      # Uncomment to enable self-tracing
-      # - SELF_TRACING_ENABLED=true
-      # Uncomment to increase heap size
-      # - JAVA_OPTS=-Xms128m -Xmx128m -XX:+ExitOnOutOfMemoryError
-    ports:
-      # Port used for the Zipkin UI and HTTP Api
-      - "9411:9411"
-    # Uncomment to enable debug logging
-    # command: --logging.level.zipkin2=DEBUG
-
-
-  web:
+  skill-repeater-service:
     build:
       context: .
       dockerfile: Dockerfile.prod
-    container_name: skill-repeater-web
-    restart: always
+    container_name: skill-repeater-service
+    restart: unless-stopped
     depends_on:
-      - database
-      - zipkin
+      - skill-repeater-db
     environment:
       MICRONAUT_ENVIRONMENTS: prod
+      GITHUB_USERNAME: ${GITHUB_USERNAME}
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
       DATASOURCE_URL: jdbc:postgresql://skill-repeater-db:5432/${SKILL_REPEATER_DATABASE_NAME}
       DATASOURCE_USERNAME: ${SKILL_REPEATER_DATABASE_USER}
       DATASOURCE_PASSWORD: ${SKILL_REPEATER_DATABASE_PASSWORD}
       JWT_GENERATOR_SIGNATURE_SECRET: ${JWT_GENERATOR_SIGNATURE_SECRET}
+      JAEGER_SERVICE_NAME: skill-repeater-service
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    labels:
+      - "logging=promtail"
+      - "service=skill-repeater-service"
+    networks:
+      - skill-repeater-network
+      - observability-stack-network
     ports:
-      - "8082:8082"
-      - "5005:5005"  # Debug port
+      - "8210:8210"
+
+  skill-repeater-front:
+    build:
+      context: ../skill-repeater-front
+      dockerfile: Dockerfile.prod
+    container_name: skill-repeater-front
+    restart: unless-stopped
+    depends_on:
+      - skill-repeater-service
+    ports:
+      - "3000:3000"
+    networks:
+      - skill-repeater-network
+    environment:
+      - NODE_ENV=production
 
 volumes:
   postgres_data:
+    
+networks:
+  observability-stack-network:
+    external: true 
+  skill-repeater-network:
+    external: true
