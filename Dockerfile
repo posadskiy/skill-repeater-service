@@ -2,13 +2,20 @@
 FROM maven:3.9.9-amazoncorretto-23-alpine AS build
 WORKDIR /app
 
+# Accept build arguments for GitHub authentication
+ARG GITHUB_USERNAME
+ARG GITHUB_TOKEN
+
 # Copy the entire project (including all modules)
 COPY . .
 
 # Build only the skill-repeater service and its submodules
-#RUN mvn clean package -pl skill-repeater-service/web -am -DskipTests
 RUN --mount=type=cache,target=/root/.m2 \
-    mvn clean package -pl web -am -DskipTests
+    mkdir -p /root/.m2 && \
+    sed -e 's/\${GITHUB_USERNAME}/'$GITHUB_USERNAME'/g' \
+        -e 's/\${GITHUB_TOKEN}/'$GITHUB_TOKEN'/g' \
+        maven-settings.xml > /root/.m2/settings.xml && \
+    mvn clean package -pl web -am -DskipTests -s /root/.m2/settings.xml
 
 # === Stage 2: Create the runtime image ===
 FROM amazoncorretto:23-alpine-jdk
