@@ -1,0 +1,109 @@
+#tag::micronaut[]
+micronaut:
+  application:
+    name: skill-repeater-service
+  server:
+    port: 8210
+    cors:
+      enabled: true
+      configurations:
+        ui:
+          allowed-origins:
+            - http://localhost:3000
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
+  security:
+    authentication: bearer
+    token:
+      jwt:
+        signatures:
+          secret:
+            generator:
+              secret: "${JWT_GENERATOR_SIGNATURE_SECRET}"
+        generator:
+          refresh-token:
+            enabled: true
+            secret: "${JWT_GENERATOR_SIGNATURE_SECRET}"
+      generator:
+        access-token:
+          expiration: 1800
+    intercept-url-map:
+      - pattern: /swagger/**
+        access:
+          - isAnonymous()
+      - pattern: /swagger-ui/**
+        access:
+          - isAnonymous()
+      - pattern: /openapi/**
+        access:
+          - isAnonymous()
+      - pattern: /prometheus
+        access:
+          - isAnonymous()
+#end::micronaut[]
+
+#tag::zipkin[]
+tracing:
+  jaeger:
+    enabled: true
+    sampler:
+      probability: 0.1 # <1>
+#end::zipkin[]
+
+#tag::prometheus[]
+endpoints:
+  prometheus:
+    enabled: true
+    path: /prometheus
+    descriptions: false
+    step: PT1M
+    prefix: skill_repeater_
+    common-tags:
+      application: skill-repeater-service
+      environment: production
+
+metrics:
+  export:
+    prometheus:
+      enabled: true
+      descriptions: false
+      step: PT1M
+      prefix: skill_repeater_
+      common-tags:
+        application: skill-repeater-service
+        environment: production
+
+  binders:
+    jvm: true
+    processor: true
+    files: true
+    logback: true
+    uptime: true
+    thread: true
+    classloader: true
+    hikaricp: true
+    http-client: true
+    http-server: true
+#end::prometheus[]
+
+#tag::database[]
+datasources:
+  default:
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    schema-generate: NONE
+    dialect: POSTGRES
+flyway:
+  datasources:
+    default:
+      enabled: true
+      baseline-on-migrate: true
+#end::database[]
