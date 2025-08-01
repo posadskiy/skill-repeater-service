@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skill-repeater-service
+  namespace: skill-repeater
+  labels:
+    app: skill-repeater-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: skill-repeater-service
+  template:
+    metadata:
+      labels:
+        app: skill-repeater-service
+    spec:
+      containers:
+      - name: skill-repeater-service
+        image: gcr.io/posadskiy-shared-services-1/skill-repeater-service:${IMAGE_VERSION}
+        ports:
+        - containerPort: 8210
+        env:
+        - name: MICRONAUT_ENVIRONMENTS
+          valueFrom:
+            configMapKeyRef:
+              name: skill-repeater-config
+              key: MICRONAUT_ENVIRONMENTS
+        - name: GITHUB_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: skill-repeater-config
+              key: GITHUB_USERNAME
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: skill-repeater-secrets
+              key: GITHUB_TOKEN
+        - name: SKILL_REPEATER_DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: skill-repeater-config
+              key: SKILL_REPEATER_DATABASE_NAME
+        - name: SKILL_REPEATER_DATABASE_USER
+          valueFrom:
+            configMapKeyRef:
+              name: skill-repeater-config
+              key: SKILL_REPEATER_DATABASE_USER
+        - name: DATASOURCE_URL
+          value: "jdbc:postgresql://skill-repeater-db:5432/${SKILL_REPEATER_DATABASE_NAME}"
+        - name: DATASOURCE_USERNAME
+          value: "${SKILL_REPEATER_DATABASE_USER}"
+        - name: DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: skill-repeater-secrets
+              key: DATASOURCE_PASSWORD
+        - name: JWT_GENERATOR_SIGNATURE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: skill-repeater-secrets
+              key: JWT_GENERATOR_SIGNATURE_SECRET
+        - name: JAEGER_SERVICE_NAME
+          value: "skill-repeater-service"
+        - name: JAEGER_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: skill-repeater-config
+              key: JAEGER_ENDPOINT
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8210
+          initialDelaySeconds: 120
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8210
+          initialDelaySeconds: 60
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skill-repeater-service
+  namespace: skill-repeater
+  labels:
+    app: skill-repeater-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8210
+      targetPort: 8210
+      protocol: TCP
+  selector:
+    app: skill-repeater-service
