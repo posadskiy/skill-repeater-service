@@ -45,7 +45,7 @@
         <repository>
             <id>github</id>
             <name>GitHub posadskiy Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/posadskiy/skill-repeater</url>
+            <url>https://maven.pkg.github.com/posadskiy/skill-repeater-service</url>
         </repository>
     </distributionManagement>
     
