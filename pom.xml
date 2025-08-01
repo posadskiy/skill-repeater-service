@@ -46,7 +46,7 @@
         <dependency>
             <groupId>com.posadskiy.email</groupId>
             <artifactId>email-template-service-api</artifactId>
-            <version>0.1.2</version>
+            <version>0.2.0</version>
         </dependency>
         <!-- Modules -->
 
@@ -270,9 +270,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <!--<configuration>
-                    <skip>true</skip>
-                </configuration>-->
                 <executions>
                     <execution>
                         <phase>package</phase>
