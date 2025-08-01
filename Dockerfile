@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.m2 \
     sed -e 's/\${GITHUB_USERNAME}/'$GITHUB_USERNAME'/g' \
         -e 's/\${GITHUB_TOKEN}/'$GITHUB_TOKEN'/g' \
         maven-settings.xml > /root/.m2/settings.xml && \
-    mvn clean package -pl web -am -DskipTests -Paot -s /root/.m2/settings.xml
+    mvn clean package -pl skill-repeater-web -am -DskipTests -s /root/.m2/settings.xml
 
 # === Stage 2: Create the runtime image ===
 FROM amazoncorretto:23-alpine-jdk
