@@ -71,6 +71,11 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Testing -->
 
         <!-- Tracing -->
@@ -108,12 +113,16 @@
         </dependency>
         <!-- Security -->
 
-        <!-- OpenAPI -->
+        <!-- Documenting -->
+        <dependency>
+            <groupId>io.micronaut.openapi</groupId>
+            <artifactId>micronaut-openapi-annotations</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.micronaut.openapi</groupId>
             <artifactId>micronaut-openapi</artifactId>
         </dependency>
-        <!-- OpenAPI -->
+        <!-- Documenting -->
 
         <!-- Utilities -->
         <dependency>

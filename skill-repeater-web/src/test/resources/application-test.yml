@@ -13,7 +13,7 @@ micronaut:
   router:
     static-resources:
       swagger:
-        paths: classpath:META-INF/swagger/swagger/
+        paths: classpath:META-INF/swagger
         mapping: /swagger/**
       swagger-ui:
         paths: classpath:META-INF/swagger/views/swagger-ui
@@ -25,11 +25,11 @@ micronaut:
         signatures:
           secret:
             generator:
-              secret: "${JWT_GENERATOR_SIGNATURE_SECRET}"
+              secret: "test-jwt-secret"
         generator:
           refresh-token:
             enabled: true
-            secret: "${JWT_GENERATOR_SIGNATURE_SECRET}"
+            secret: "test-jwt-secret"
       generator:
         access-token:
           expiration: 1800
@@ -48,36 +48,49 @@ micronaut:
           - isAnonymous()
 #end::micronaut[]
 
-#tag::zipkin[]
+#tag::database[]
+datasources:
+  default:
+    url: "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"
+    username: "test"
+    password: "test"
+    driver-class-name: org.h2.Driver
+    schema-generate: CREATE_DROP
+    dialect: H2
+flyway:
+  datasources:
+    default:
+      enabled: false
+#end::database[]
+
+#tag::jaeger[]
 tracing:
   jaeger:
-    enabled: true
-    sampler:
-      probability: 0.1 # <1>
-#end::zipkin[]
+    enabled: false
+#end::jaeger[]
 
 #tag::prometheus[]
 endpoints:
   prometheus:
     enabled: true
     path: /prometheus
-    descriptions: false
+    descriptions: true
     step: PT1M
     prefix: skill_repeater_
     common-tags:
       application: skill-repeater-service
-      environment: production
+      environment: test
 
 metrics:
   export:
     prometheus:
       enabled: true
-      descriptions: false
+      descriptions: true
       step: PT1M
       prefix: skill_repeater_
       common-tags:
         application: skill-repeater-service
-        environment: production
+        environment: test
 
   binders:
     jvm: true
@@ -90,20 +103,4 @@ metrics:
     hikaricp: true
     http-client: true
     http-server: true
-#end::prometheus[]
-
-#tag::database[]
-datasources:
-  default:
-    url: ${DATASOURCE_URL}
-    username: ${DATASOURCE_USERNAME}
-    password: ${DATASOURCE_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-    schema-generate: NONE
-    dialect: POSTGRES
-flyway:
-  datasources:
-    default:
-      enabled: true
-      baseline-on-migrate: true
-#end::database[]
+#end::prometheus[] 
