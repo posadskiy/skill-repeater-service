@@ -47,9 +47,15 @@ spec:
               name: skill-repeater-config
               key: SKILL_REPEATER_DATABASE_USER
         - name: DATASOURCE_URL
-          value: "jdbc:postgresql://skill-repeater-db:5432/${SKILL_REPEATER_DATABASE_NAME}"
+          valueFrom:
+            configMapKeyRef:
+              name: skill-repeater-config
+              key: SKILL_REPEATER_DATASOURCE_URL
         - name: DATASOURCE_USERNAME
-          value: "${SKILL_REPEATER_DATABASE_USER}"
+          valueFrom:
+            configMapKeyRef:
+              name: skill-repeater-config
+              key: SKILL_REPEATER_DATABASE_USER
         - name: DATASOURCE_PASSWORD
           valueFrom:
             secretKeyRef:
