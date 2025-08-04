@@ -1,0 +1,1 @@
+ALTER TABLE skills ADD COLUMN priority INTEGER DEFAULT 2; 

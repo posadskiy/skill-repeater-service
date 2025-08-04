@@ -9,6 +9,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import com.posadskiy.skillrepeater.api.model.Priority;
 
 @Data
 @MappedEntity("skills")
@@ -40,6 +41,10 @@ public class SkillEntity {
     @NonNull
     @NotNull
     private Integer level;
+
+    @NonNull
+    @NotNull
+    private Integer priority;
 
     private LocalDateTime lastRepeated;
 
@@ -109,6 +114,18 @@ public class SkillEntity {
 
     public void setLevel(Integer level) {
         this.level = level;
+    }
+
+    public @NonNull @NotNull Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(@NonNull @NotNull Integer priority) {
+        this.priority = priority;
+    }
+
+    public void setPriority(@NonNull @NotNull Priority priority) {
+        this.priority = priority.getValue();
     }
 
     public LocalDateTime getLastRepeated() {

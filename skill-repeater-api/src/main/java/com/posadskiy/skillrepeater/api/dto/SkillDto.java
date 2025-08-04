@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import com.posadskiy.skillrepeater.api.model.Priority;
 
 @Serdeable
 @Introspected
@@ -18,7 +19,7 @@ public record SkillDto(
     @Nullable String id,
 
     @Schema(description = "ID of the user who owns this skill", example = "1")
-    @NonNull @NotBlank Long userId,
+    @NonNull @NotBlank String userId,
 
     @Schema(description = "Name of the skill", example = "Java Programming")
     @NonNull @NotBlank String name,
@@ -39,6 +40,9 @@ public record SkillDto(
     @Nullable Date nextRepeated,
 
     @Schema(description = "Current level of skill mastery (1-5)", example = "3", minimum = "1", maximum = "5")
-    @Nullable Integer level
+    @Nullable Integer level,
+
+    @Schema(description = "Priority level of the skill (LOW, MEDIUM, HIGH, CRITICAL)", example = "MEDIUM")
+    @Nullable Priority priority
 ) {
 }

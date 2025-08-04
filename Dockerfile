@@ -22,7 +22,7 @@ FROM amazoncorretto:23-alpine-jdk
 WORKDIR /app
 
 # Copy the built JAR file from the build stage
-COPY --from=build /app/web/target/web-*.jar app.jar
+COPY --from=build /app/skill-repeater-web/target/skill-repeater-web-*.jar app.jar
 
 # Expose the application port (defined in application.yaml)
 EXPOSE 8210

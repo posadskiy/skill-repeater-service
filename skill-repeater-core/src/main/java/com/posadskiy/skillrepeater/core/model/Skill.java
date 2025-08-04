@@ -4,6 +4,8 @@ import io.micronaut.core.annotation.Introspected;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import com.posadskiy.skillrepeater.api.model.Priority;
+import lombok.Data;
 
 @Introspected
 public class Skill {
@@ -16,14 +18,7 @@ public class Skill {
     private LocalDateTime lastRepeated;
     private LocalDateTime nextRepeated;
     private Integer level;
-
-    public LocalDateTime getNextRepeated() {
-        return nextRepeated;
-    }
-
-    public void setNextRepeated(LocalDateTime nextRepeated) {
-        this.nextRepeated = nextRepeated;
-    }
+    private Priority priority;
 
     public String getId() {
         return id;
@@ -81,11 +76,27 @@ public class Skill {
         this.lastRepeated = lastRepeated;
     }
 
+    public LocalDateTime getNextRepeated() {
+        return nextRepeated;
+    }
+
+    public void setNextRepeated(LocalDateTime nextRepeated) {
+        this.nextRepeated = nextRepeated;
+    }
+
     public Integer getLevel() {
         return level;
     }
 
     public void setLevel(Integer level) {
         this.level = level;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
     }
 }

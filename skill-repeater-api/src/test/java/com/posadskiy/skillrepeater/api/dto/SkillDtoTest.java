@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import com.posadskiy.skillrepeater.api.model.Priority;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,7 +21,8 @@ class SkillDtoTest {
             "1",
             new Date(),
             new Date(),
-            1
+            1,
+            Priority.MEDIUM
         );
 
         assertEquals("test-skill-id", skillDto.id());
@@ -30,6 +32,7 @@ class SkillDtoTest {
         assertEquals(ChronoUnit.DAYS, skillDto.period());
         assertEquals("1", skillDto.number());
         assertEquals(1, skillDto.level());
+        assertEquals(Priority.MEDIUM, skillDto.priority());
         assertNotNull(skillDto.lastRepeated());
         assertNotNull(skillDto.nextRepeated());
     }
@@ -46,7 +49,8 @@ class SkillDtoTest {
             "1",
             now,
             now,
-            1
+            1,
+            Priority.MEDIUM
         );
 
         SkillDto skillDto2 = new SkillDto(
@@ -58,7 +62,8 @@ class SkillDtoTest {
             "1",
             now,
             now,
-            1
+            1,
+            Priority.MEDIUM
         );
 
         assertEquals(skillDto1, skillDto2);
@@ -74,6 +79,7 @@ class SkillDtoTest {
             null,
             ChronoUnit.DAYS,
             "1",
+            null,
             null,
             null,
             null
@@ -101,7 +107,8 @@ class SkillDtoTest {
             "1",
             new Date(),
             new Date(),
-            1
+            1,
+            Priority.MEDIUM
         );
 
         String toString = skillDto.toString();
