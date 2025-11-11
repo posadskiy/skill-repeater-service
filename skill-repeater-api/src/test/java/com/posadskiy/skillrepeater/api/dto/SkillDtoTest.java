@@ -14,7 +14,7 @@ class SkillDtoTest {
     void testSkillDtoCreation() {
         SkillDto skillDto = new SkillDto(
             "test-skill-id",
-            1L,
+            "1",
             "Java Programming",
             "Learn Java programming language",
             ChronoUnit.DAYS,
@@ -26,7 +26,7 @@ class SkillDtoTest {
         );
 
         assertEquals("test-skill-id", skillDto.id());
-        assertEquals(1L, skillDto.userId());
+        assertEquals("1", skillDto.userId());
         assertEquals("Java Programming", skillDto.name());
         assertEquals("Learn Java programming language", skillDto.description());
         assertEquals(ChronoUnit.DAYS, skillDto.period());
@@ -42,7 +42,7 @@ class SkillDtoTest {
         Date now = new Date();
         SkillDto skillDto1 = new SkillDto(
             "test-skill-id",
-            1L,
+            "1",
             "Java Programming",
             "Learn Java programming language",
             ChronoUnit.DAYS,
@@ -55,7 +55,7 @@ class SkillDtoTest {
 
         SkillDto skillDto2 = new SkillDto(
             "test-skill-id",
-            1L,
+            "1",
             "Java Programming",
             "Learn Java programming language",
             ChronoUnit.DAYS,
@@ -74,7 +74,7 @@ class SkillDtoTest {
     void testSkillDtoWithNullValues() {
         SkillDto skillDto = new SkillDto(
             null,
-            1L,
+            "1",
             "Java Programming",
             null,
             ChronoUnit.DAYS,
@@ -90,7 +90,7 @@ class SkillDtoTest {
         assertNull(skillDto.lastRepeated());
         assertNull(skillDto.nextRepeated());
         assertNull(skillDto.level());
-        assertEquals(1L, skillDto.userId());
+        assertEquals("1", skillDto.userId());
         assertEquals("Java Programming", skillDto.name());
         assertEquals(ChronoUnit.DAYS, skillDto.period());
         assertEquals("1", skillDto.number());
@@ -100,7 +100,7 @@ class SkillDtoTest {
     void testSkillDtoToString() {
         SkillDto skillDto = new SkillDto(
             "test-skill-id",
-            1L,
+            "1",
             "Java Programming",
             "Learn Java programming language",
             ChronoUnit.DAYS,

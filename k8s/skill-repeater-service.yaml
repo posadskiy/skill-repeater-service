@@ -15,9 +15,12 @@ spec:
       labels:
         app: skill-repeater-service
     spec:
+      imagePullSecrets:
+        - name: dockerhub-registry-secret
       containers:
       - name: skill-repeater-service
-        image: gcr.io/posadskiy-shared-services-1/skill-repeater-service:${IMAGE_VERSION}
+        image: ${DOCKERHUB_USERNAME}/skill-repeater-service:${IMAGE_VERSION}
+        imagePullPolicy: Always
         ports:
         - containerPort: 8210
         env:

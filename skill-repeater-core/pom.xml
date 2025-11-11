@@ -140,15 +140,18 @@
                 <configuration>
                     <annotationProcessorPaths combine.children="append">
                         <path>
-                            <groupId>io.micronaut.data</groupId>
-                            <artifactId>micronaut-data-processor</artifactId>
-                        </path>
-                        <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
                         </path>
+                        <path>
+                            <groupId>io.micronaut.data</groupId>
+                            <artifactId>micronaut-data-processor</artifactId>
+                        </path>
                     </annotationProcessorPaths>
+                    <compilerArgs>
+                        <arg>-Alombok.addLombokGeneratedAnnotation=true</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
         </plugins>

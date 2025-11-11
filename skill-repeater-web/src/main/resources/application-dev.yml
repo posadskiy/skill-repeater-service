@@ -51,9 +51,9 @@ micronaut:
 #tag::database[]
 datasources:
   default:
-    url: ${DATASOURCE_URL}
-    username: ${DATASOURCE_USERNAME}
-    password: ${DATASOURCE_PASSWORD}
+    url: jdbc:postgresql://localhost:5433/skill_repeater
+    username: ${SKILL_REPEATER_DATABASE_USER}
+    password: ${SKILL_REPEATER_DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
     schema-generate: NONE
     dialect: POSTGRES

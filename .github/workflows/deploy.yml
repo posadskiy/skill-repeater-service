@@ -14,9 +14,9 @@ on:
 env:
   JAVA_VERSION: '21'
   MAVEN_VERSION: '3.9.9'
-  DOCKER_REGISTRY: 'gcr.io'
+  DOCKER_REGISTRY: 'docker.io'
   IMAGE_NAME: 'skill-repeater-service'
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
 
 jobs:
   # Quality Assurance
@@ -121,16 +121,13 @@ jobs:
     - name: Set up Docker Build
       uses: docker/setup-buildx-action@v3
       
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
       with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        username: ${{ env.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
         
-    - name: Configure Docker for GCR
-      run: |
-        gcloud auth configure-docker gcr.io --quiet
-        
-    - name: Build and Push to GCR
+    - name: Build and Push to Docker Hub
       id: build
       env:
         GITHUB_TOKEN: ${{ secrets.DEPLOYMENT_GITHUB_TOKEN }}
@@ -139,11 +136,10 @@ jobs:
         echo "🏗️ Building application..."
         mvn clean package -DskipTests
         
-        # Create GCR image tags
+        # Create Docker Hub image tags
         TAG_DATE=$(date +%Y%m%d%H%M%S)
-        REGISTRY="${{ env.DOCKER_REGISTRY }}/${{ env.PROJECT_ID }}"
-        IMAGE_TAG="$REGISTRY/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}"
-        IMAGE_TAG_DATE="$REGISTRY/${{ env.IMAGE_NAME }}:$TAG_DATE"
+        IMAGE_TAG="${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}"
+        IMAGE_TAG_DATE="${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:$TAG_DATE"
         
         echo "🐳 Building Docker image..."
         docker buildx build --platform linux/amd64 \
@@ -173,7 +169,7 @@ jobs:
         echo "Version: ${{ steps.version.outputs.version }}" >> build-summary.txt
         echo "Image Tag: ${{ steps.build.outputs.image-tag }}" >> build-summary.txt
         echo "Image Tag Date: ${{ steps.build.outputs.image-tag-date }}" >> build-summary.txt
-        echo "Registry: ${{ env.DOCKER_REGISTRY }}/${{ env.PROJECT_ID }}" >> build-summary.txt
+        echo "Registry: Docker Hub (${{ env.DOCKERHUB_USERNAME }})" >> build-summary.txt
         echo "Build Date: $(date)" >> build-summary.txt
         
     - name: Upload Build Summary
@@ -207,66 +203,44 @@ jobs:
         name: build-summary-${{ github.run_number }}
         path: ./
         
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
-        
-    - name: Configure Docker for GCR
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      
+    - name: Configure kubectl
       run: |
-        gcloud auth configure-docker gcr.io --quiet
-        
-    - name: Get GKE Credentials
-      uses: google-github-actions/get-gke-credentials@v2
-      with:
-        cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
-        location: ${{ secrets.GKE_REGION }}
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
         
     - name: Deploy to Production Environment
       run: |
         echo "🔐 Deploying skill-repeater-service to production environment..."
         
         # Configuration
-        PROJECT_ID="${{ env.PROJECT_ID }}"
-        CLUSTER_NAME="${{ secrets.GKE_CLUSTER_NAME }}"
         NAMESPACE="${{ secrets.K8S_NAMESPACE || 'skill-repeater' }}"
         VERSION="${{ needs.build.outputs.version }}"
         IMAGE_TAG="${{ needs.build.outputs.image-tag }}"
+        DOCKERHUB_USERNAME="${{ env.DOCKERHUB_USERNAME }}"
         
         echo "📋 Production Deployment Plan:"
         echo "- Environment: Production"
         echo "- Application: Skill Repeater Service"
         echo "- Version: $VERSION"
         echo "- Image: $IMAGE_TAG"
-        echo "- Project ID: $PROJECT_ID"
-        echo "- Cluster: $CLUSTER_NAME"
         echo "- Namespace: $NAMESPACE"
         
-        # Check if cluster exists and get credentials
-        echo "🔍 Checking cluster access..."
-        if ! gcloud container clusters describe $CLUSTER_NAME --zone=${{ secrets.GKE_REGION }} > /dev/null 2>&1; then
-            echo "❌ Cluster $CLUSTER_NAME not found in ${{ secrets.GKE_REGION }}"
+        # Check if kubectl is working
+        echo "🔍 Checking kubectl connection..."
+        kubectl cluster-info || {
+            echo "❌ kubectl connection failed"
+            echo "💡 Please check your KUBECONFIG secret"
             exit 1
-        fi
-        
-        # Install gke-gcloud-auth-plugin using the official method
-        export USE_GKE_GCLOUD_AUTH_PLUGIN=True
-        
-        # Add Google Cloud repository with proper GPG key
-        curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
-        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
-        sudo apt-get update
-        sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
-        
-        # Get cluster credentials
-        echo "🔐 Getting cluster credentials..."
-        gcloud container clusters get-credentials $CLUSTER_NAME --zone=${{ secrets.GKE_REGION }}
+        }
         
         # Deploy skill-repeater-service with version substitution
         echo "🔐 Deploying skill-repeater-service..."
         export IMAGE_VERSION=$VERSION
         export IMAGE_TAG=$IMAGE_TAG
+        export DOCKERHUB_USERNAME=$DOCKERHUB_USERNAME
         export GITHUB_USERNAME="posadskiy"
         
         # Create temporary skill-repeater-service.yaml with image substitution
@@ -359,6 +333,7 @@ jobs:
         echo "" >> release_body.md
         echo "### 📦 Release Artifacts" >> release_body.md
         echo "- Source code tagged with version ${{ needs.build.outputs.version }}" >> release_body.md
+        echo "- Docker image available in Docker Hub" >> release_body.md
         echo "- Maven artifacts available in GitHub Packages" >> release_body.md
         echo "" >> release_body.md
         echo "### 🔧 Build Instructions" >> release_body.md
@@ -394,17 +369,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
-        
-    - name: Get GKE Credentials
-      uses: google-github-actions/get-gke-credentials@v2
-      with:
-        cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
-        location: ${{ secrets.GKE_REGION }}
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
         
     - name: Monitor Application Health
       run: |
