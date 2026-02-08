@@ -244,7 +244,7 @@ jobs:
         export GITHUB_USERNAME="posadskiy"
         
         # Create temporary skill-repeater-service.yaml with image substitution
-        envsubst < k8s/skill-repeater-service.yaml | kubectl apply -f -
+        envsubst < deployment/skill-repeater-service.yaml | kubectl apply -f -
         
         # Wait for skill-repeater-service to be ready
         echo "⏳ Waiting for skill-repeater-service to be ready..."
