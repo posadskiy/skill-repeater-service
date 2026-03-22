@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.posadskiy.skillrepeater</groupId>
     <artifactId>skill-repeater-service</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1</version>
     <packaging>pom</packaging>
     <modules>
         <module>skill-repeater-api</module>
@@ -19,12 +19,12 @@
     </parent>
     <properties>
         <packaging>jar</packaging>
-        <jdk.version>21</jdk.version>
-        <release.version>21</release.version>
+        <jdk.version>25</jdk.version>
+        <release.version>25</release.version>
         <micronaut.version>4.5.0</micronaut.version>
-        <lombok.version>1.18.34</lombok.version>
+        <lombok.version>1.18.42</lombok.version>
         <micronaut.aot.enabled>true</micronaut.aot.enabled>
-        <micronaut.aot.packageName>skillrepeater.service.aot.generated</micronaut.aot.packageName>
+        <micronaut.aot.packageName>com.posadskiy.skillrepeater.service.aot.generated</micronaut.aot.packageName>
         <micronaut.runtime>netty</micronaut.runtime>
         <exec.mainClass>com.posadskiy.skillrepeater.web.Application</exec.mainClass>
     </properties>

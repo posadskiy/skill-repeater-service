@@ -7,7 +7,8 @@ set -e
 
 SERVICE_NAME="skill-repeater-service"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVICE_DEPLOYMENT="$(dirname "$(dirname "$SCRIPT_DIR")")"
+# deployment/scripts -> deployment/
+SERVICE_DEPLOYMENT="$(dirname "$SCRIPT_DIR")"
 NAMESPACE="${K8S_NAMESPACE:-skill-repeater}"
 
 if [ $# -lt 1 ]; then

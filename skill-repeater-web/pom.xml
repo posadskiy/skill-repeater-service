@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.posadskiy.skillrepeater</groupId>
         <artifactId>skill-repeater-service</artifactId>
-        <version>0.2.0</version>
+        <version>0.2.1</version>
     </parent>
 
     <artifactId>skill-repeater-web</artifactId>
@@ -152,7 +152,7 @@
                 <groupId>io.micronaut.maven</groupId>
                 <artifactId>micronaut-maven-plugin</artifactId>
                 <configuration>
-                    <configFile>aot-${packaging}.properties</configFile>
+                    <configFile>${project.parent.basedir}/aot-${packaging}.properties</configFile>
                 </configuration>
             </plugin>
             <plugin>

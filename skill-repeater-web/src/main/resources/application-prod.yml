@@ -101,6 +101,8 @@ datasources:
     driver-class-name: org.postgresql.Driver
     schema-generate: NONE
     dialect: POSTGRES
+    maximum-pool-size: 2
+    minimum-idle: 0
 flyway:
   datasources:
     default:
