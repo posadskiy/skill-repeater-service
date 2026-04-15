@@ -46,6 +46,15 @@ micronaut:
       - pattern: /prometheus
         access:
           - isAnonymous()
+  metrics:
+    enabled: true
+    export:
+      prometheus:
+        enabled: true
+        descriptions: true
+  tracing:
+    opentelemetry:
+      enabled: false
 #end::micronaut[]
 
 #tag::database[]
@@ -63,44 +72,17 @@ flyway:
       enabled: false
 #end::database[]
 
-#tag::jaeger[]
-tracing:
-  jaeger:
-    enabled: false
-#end::jaeger[]
-
 #tag::prometheus[]
 endpoints:
   prometheus:
     enabled: true
-    path: /prometheus
-    descriptions: true
-    step: PT1M
-    prefix: skill_repeater_
-    common-tags:
-      application: skill-repeater-service
-      environment: test
-
-metrics:
-  export:
-    prometheus:
-      enabled: true
-      descriptions: true
-      step: PT1M
-      prefix: skill_repeater_
-      common-tags:
-        application: skill-repeater-service
-        environment: test
-
-  binders:
-    jvm: true
-    processor: true
-    files: true
-    logback: true
-    uptime: true
-    thread: true
-    classloader: true
-    hikaricp: true
-    http-client: true
-    http-server: true
+    sensitive: false
 #end::prometheus[] 
+
+otel:
+  exporter:
+    otlp:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4317}
+      protocol: grpc
+  traces:
+    exporter: none

@@ -32,8 +32,10 @@ services:
       DATASOURCE_USERNAME: ${SKILL_REPEATER_DATABASE_USER}
       DATASOURCE_PASSWORD: ${SKILL_REPEATER_DATABASE_PASSWORD}
       JWT_GENERATOR_SIGNATURE_SECRET: ${JWT_GENERATOR_SIGNATURE_SECRET}
-      JAEGER_SERVICE_NAME: skill-repeater-service
-      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+      OTEL_SERVICE_NAME: skill-repeater-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://grafana-alloy:4317
+      OTEL_TRACES_SAMPLER: parentbased_traceidratio
+      OTEL_TRACES_SAMPLER_ARG: "1.0"
     logging:
       driver: "json-file"
       options:

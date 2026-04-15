@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.posadskiy.skillrepeater</groupId>
         <artifactId>skill-repeater-service</artifactId>
-        <version>0.2.1</version>
+        <version>0.3.0</version>
     </parent>
 
     <artifactId>skill-repeater-web</artifactId>
@@ -53,6 +53,11 @@
             <artifactId>logback-classic</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>7.4</version>
+        </dependency>
         <!-- Logging -->
 
         <!-- Testing -->
@@ -81,7 +86,11 @@
         <!-- Tracing -->
         <dependency>
             <groupId>io.micronaut.tracing</groupId>
-            <artifactId>micronaut-tracing-jaeger</artifactId>
+            <artifactId>micronaut-tracing-opentelemetry-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
             <scope>compile</scope>
         </dependency>
         <!-- Tracing -->

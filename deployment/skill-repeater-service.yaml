@@ -14,6 +14,10 @@ spec:
     metadata:
       labels:
         app: skill-repeater-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/prometheus"
+        prometheus.io/port: "8210"
     spec:
       imagePullSecrets:
         - name: dockerhub-registry-secret
@@ -69,13 +73,14 @@ spec:
             secretKeyRef:
               name: skill-repeater-secrets
               key: JWT_GENERATOR_SIGNATURE_SECRET
-        - name: JAEGER_SERVICE_NAME
+        - name: OTEL_SERVICE_NAME
           value: "skill-repeater-service"
-        - name: JAEGER_ENDPOINT
-          valueFrom:
-            configMapKeyRef:
-              name: skill-repeater-config
-              key: JAEGER_ENDPOINT
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://grafana-alloy.observability.svc.cluster.local:4317"
+        - name: OTEL_TRACES_SAMPLER
+          value: parentbased_traceidratio
+        - name: OTEL_TRACES_SAMPLER_ARG
+          value: "1.0"
         resources:
           requests:
             memory: "512Mi"

@@ -101,7 +101,10 @@ On **repeat**: `lastRepeated` = now, `nextRepeated` = now + (number × period), 
 | `DATASOURCE_USERNAME` | Database username | — |
 | `DATASOURCE_PASSWORD` | Database password | — |
 | `JWT_GENERATOR_SIGNATURE_SECRET` | JWT signing secret | — |
-| `JAEGER_ENDPOINT` | Jaeger collector URL | `http://localhost:14268/api/traces` |
+| `OTEL_SERVICE_NAME` | Logical service name for traces | `skill-repeater-service` |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | OTLP gRPC endpoint (Grafana Alloy) | `http://localhost:4317` |
+| `OTEL_TRACES_SAMPLER` | OpenTelemetry sampler | `parentbased_traceidratio` |
+| `OTEL_TRACES_SAMPLER_ARG` | Sampling ratio | `1.0` |
 
 ## Running
 
@@ -137,4 +140,4 @@ Kubernetes manifest and deploy scripts are in `deployment/`. Shared cluster conf
 
 - **API route:** `api.posadskiy.com/skill-repeater/*` (Traefik strips prefix)
 - **Database:** Aiven managed PostgreSQL
-- **Tracing:** Jaeger collector in observability namespace
+- **Tracing:** OpenTelemetry OTLP via Grafana Alloy in observability namespace

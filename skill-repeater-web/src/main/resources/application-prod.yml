@@ -46,51 +46,37 @@ micronaut:
       - pattern: /prometheus
         access:
           - isAnonymous()
-#end::micronaut[]
-
-#tag::zipkin[]
-tracing:
-  jaeger:
+  metrics:
     enabled: true
-    sampler:
-      probability: 0.1 # <1>
-#end::zipkin[]
+    export:
+      prometheus:
+        enabled: true
+        descriptions: true
+  tracing:
+    opentelemetry:
+      enabled: true
+#end::micronaut[]
 
 #tag::prometheus[]
 endpoints:
   prometheus:
     enabled: true
-    path: /prometheus
-    descriptions: false
-    step: PT1M
-    prefix: skill_repeater_
-    common-tags:
-      application: skill-repeater-service
-      environment: production
-
-metrics:
-  export:
-    prometheus:
-      enabled: true
-      descriptions: false
-      step: PT1M
-      prefix: skill_repeater_
-      common-tags:
-        application: skill-repeater-service
-        environment: production
-
-  binders:
-    jvm: true
-    processor: true
-    files: true
-    logback: true
-    uptime: true
-    thread: true
-    classloader: true
-    hikaricp: true
-    http-client: true
-    http-server: true
+    sensitive: false
 #end::prometheus[]
+
+otel:
+  exporter:
+    otlp:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4317}
+      protocol: grpc
+  traces:
+    exporter: otlp
+    sampler:
+      arg: ${OTEL_TRACES_SAMPLER_ARG:1.0}
+
+logging:
+  level:
+    root: ${LOG_LEVEL_ROOT:INFO}
 
 #tag::database[]
 datasources:
